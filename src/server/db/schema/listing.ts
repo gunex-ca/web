@@ -14,7 +14,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { customAlphabet } from "nanoid";
 import { user } from "./auth";
-import { relations } from "drizzle-orm";
+import {
+  relations,
+  type InferInsertModel,
+  type InferSelectModel,
+} from "drizzle-orm";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 const listingId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 12);
 
@@ -117,8 +122,6 @@ export const listing = pgTable(
 
     // Pricing
     price: numeric("price", { precision: 10, scale: 2 }),
-    currency: varchar("currency", { length: 3 }).default("CAD").notNull(),
-    isTradeAccepted: boolean("is_trade_accepted").default(false).notNull(),
 
     // Item meta
     condition: conditionEnum("condition"),
@@ -145,6 +148,12 @@ export const listing = pgTable(
     uniqueIndex("listings_public_id_uk").on(table.publicId),
   ]
 );
+
+export type ListingInsert = InferInsertModel<typeof listing>;
+export type ListingSelect = InferSelectModel<typeof listing>;
+
+export const listingSelectSchema = createSelectSchema(listing);
+export const listingInsertSchema = createInsertSchema(listing);
 
 // Listing view events (for analytics and deduplication)
 export const listingView = pgTable(
@@ -186,18 +195,16 @@ export const listingImage = pgTable(
 // Favorites (wishlists)
 export const favorite = pgTable(
   "favorite",
-  (t) => ({
-    id: t.uuid("id").primaryKey().defaultRandom().notNull(),
-    userId: t
-      .uuid("user_id")
+  {
+    id: uuid("id").primaryKey().defaultRandom().notNull(),
+    userId: uuid("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    listingId: t
-      .uuid("listing_id")
+    listingId: uuid("listing_id")
       .notNull()
       .references(() => listing.id, { onDelete: "cascade" }),
-    createdAt: t.timestamp("created_at").defaultNow().notNull(),
-  }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
   ]
@@ -206,21 +213,19 @@ export const favorite = pgTable(
 // Offers (bids)
 export const offer = pgTable(
   "offer",
-  (t) => ({
-    id: t.uuid("id").primaryKey().defaultRandom().notNull(),
-    listingId: t
-      .uuid("listing_id")
+  {
+    id: uuid("id").primaryKey().defaultRandom().notNull(),
+    listingId: uuid("listing_id")
       .notNull()
       .references(() => listing.id, { onDelete: "cascade" }),
-    buyerId: t
-      .uuid("buyer_id")
+    buyerId: uuid("buyer_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
-    amount: t.numeric("amount", { precision: 10, scale: 2 }).notNull(),
-    message: t.text("message"),
+    amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
+    message: text("message"),
     status: offerStatusEnum("status").default("pending").notNull(),
-    createdAt: t.timestamp("created_at").defaultNow().notNull(),
-  }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
   (table) => [
     index("offers_listing_id_idx").on(table.listingId),
     index("offers_buyer_id_idx").on(table.buyerId),

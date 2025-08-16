@@ -1,21 +1,30 @@
-import { z } from "zod";
-
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { TRPCError } from "@trpc/server";
+import { auth } from "~/lib/auth";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "~/server/api/trpc";
 import * as schema from "~/server/db/schema";
+import { listingInsertSchema } from "~/server/db/schema";
+import { takeFirst } from "~/server/db/utils";
 
 export const listingRouter = createTRPCRouter({
-  create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
-    .mutation(async ({ ctx, input }) => {}),
+  create: protectedProcedure
+    .input(listingInsertSchema)
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db
+        .insert(schema.listing)
+        .values({ ...input, sellerId: ctx.session.user.id })
+        .returning()
+        .then(takeFirst);
+    }),
 
-  getLatest: publicProcedure.query(async ({ ctx }) => {
-    const post = await ctx.db.query.listing.findFirst({
-      with: {
-        images: true,
-      },
+  getNewest: publicProcedure.query(async ({ ctx }) => {
+    return ctx.db.query.listing.findMany({
+      with: { images: true },
       orderBy: (listing, { desc }) => [desc(listing.createdAt)],
+      limit: 10,
     });
-
-    return post ?? null;
   }),
 });
