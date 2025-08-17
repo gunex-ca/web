@@ -89,7 +89,7 @@ function buildFieldSchema(field: PropertyField): z.ZodTypeAny {
 }
 
 export function buildPropertiesZod(
-  spec: PropertySchemaSpec
+  spec: PropertySchemaSpec,
 ): z.ZodEffects<z.ZodObject<Record<string, z.ZodTypeAny>>> {
   const shape: Record<string, z.ZodTypeAny> = {};
 
@@ -188,6 +188,7 @@ export const CATEGORIES = {
                 { value: "remington", label: "Remington" },
                 { value: "ruger", label: "Ruger" },
                 { value: "sako", label: "Sako" },
+                { value: "other", label: "Other" },
               ],
             },
             {
@@ -253,7 +254,7 @@ export const CATEGORIES = {
 export const CATEGORY_PROPERTY_SCHEMAS = {
   firearms: {
     rifles: buildPropertiesZod(
-      CATEGORIES.FIREARMS.subcategories.RIFLES.properties
+      CATEGORIES.FIREARMS.subcategories.RIFLES.properties,
     ),
   },
 } as const;

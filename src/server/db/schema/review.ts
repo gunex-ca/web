@@ -24,7 +24,7 @@ export const review = pgTable(
     index("review_reviewee_id_idx").on(table.revieweeId),
     uniqueIndex("review_reviewer_reviewee_uk").on(
       table.reviewerId,
-      table.revieweeId
+      table.revieweeId,
     ),
-  ]
+  ],
 );

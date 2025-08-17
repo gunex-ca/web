@@ -8,7 +8,7 @@ export const takeFirst = <T extends any[]>(values: T): T[number] => {
 
 // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 export const takeFirstOrNull = <T extends any[]>(
-  values: T
+  values: T,
 ): T[number] | null => {
   if (values.length !== 1) return null;
   // biome-ignore lint/style/noNonNullAssertion: <explanation>
