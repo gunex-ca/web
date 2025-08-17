@@ -13,7 +13,7 @@ export function PhoneReveal({ phoneNumber, className }: PhoneRevealProps) {
   const [revealed, setRevealed] = useState(false);
 
   const masked = phoneNumber.replace(/\d/g, (d, i) =>
-    i < phoneNumber.length - 4 ? "•" : d
+    i < phoneNumber.length - 4 ? "•" : d,
   );
 
   return (

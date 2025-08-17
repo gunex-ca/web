@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { CreateListingForm } from "./_components/CreateListingForm";
 
+import { ImageUploader } from "./_components/ImageUploader";
+
 export const metadata: Metadata = {
   title: "New listing • Gunex",
   description: "Create a new listing to sell your item.",
@@ -16,6 +18,14 @@ export default function NewListingPage() {
           <p className="mt-1 text-muted-foreground text-sm">
             Fill out the details below to get your listing live.
           </p>
+        </div>
+        <div className="mb-6">
+          <div className="space-y-1.5">
+            <label htmlFor="images" className="font-medium text-sm">
+              Images
+            </label>
+            <ImageUploader />
+          </div>
         </div>
         <CreateListingForm />
       </div>

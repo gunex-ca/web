@@ -153,12 +153,13 @@ const DetailsSection: FC<{ properties: ListingProperties }> = ({
 }) => (
   <div className="mt-6">
     <h2 className="mb-2 font-medium text-md text-muted-foreground">Details</h2>
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+    <dl className="space-y-1 text-sm">
       {Object.entries(properties).map(([key, value]) => (
-        <Fragment key={key}>
-          <dt className="text-muted-foreground">{capitalCase(key)}</dt>
-          <dd className="font-medium">{value}</dd>
-        </Fragment>
+        <div key={key} className="flex items-center gap-2">
+          <dt className="shrink-0 text-muted-foreground">{capitalCase(key)}</dt>
+          <div className="flex-grow border-t" />
+          <dd className="shrink-0 font-medium">{value}</dd>
+        </div>
       ))}
     </dl>
   </div>
@@ -242,6 +243,7 @@ export default function ListingPage({ params: _params }: PageProps) {
       reviews: 100,
       username: "johndoe",
       createdAt: new Date("2024-01-01"),
+      phoneNumber: "+1234567890",
     },
     properties: {
       manufacturer: "Remington",
@@ -249,7 +251,6 @@ export default function ListingPage({ params: _params }: PageProps) {
       caliber: ".308 Win",
       action: "Bolt",
       barrelLengthIn: 20,
-      phoneNumber: "+1234567890",
     },
     images: [
       {
@@ -326,9 +327,7 @@ export default function ListingPage({ params: _params }: PageProps) {
 
               <SellerSection seller={listing.seller} />
 
-              <PhoneReveal
-                phoneNumber={String(listing.properties.phoneNumber)}
-              />
+              <PhoneReveal phoneNumber={String(listing.seller.phoneNumber)} />
             </div>
 
             <div className="sticky bottom-0 shrink-0 space-y-2 border-t bg-background p-4 text-sm">
