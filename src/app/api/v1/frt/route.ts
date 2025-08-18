@@ -31,7 +31,7 @@ export const POST = request()
     for (const item of ctx.body) {
       const country = countryCodesList.findOne(
         "countryCode",
-        item.country_code
+        item.country_code,
       );
 
       if (country == null && item.country_code !== "Unknown") {

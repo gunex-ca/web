@@ -133,8 +133,6 @@ export const listing = pgTable(
 
     // Item meta
     condition: conditionEnum("condition"),
-    firearmType: firearmTypeEnum("firearm_type"),
-    firearmClass: firearmClassEnum("firearm_class"),
 
     // Location
     province: provinceEnum("province"),
@@ -144,6 +142,7 @@ export const listing = pgTable(
     properties: jsonb("properties"),
 
     status: listingStatusEnum("status").default("draft").notNull(),
+
     // Cross-post/import flags
     imported: boolean("imported").default(false).notNull(),
     importedAt: timestamp("imported_at"),

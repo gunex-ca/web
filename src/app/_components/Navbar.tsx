@@ -27,7 +27,7 @@ export default async function Navbar({
           <Link href="/about" className="hover:text-foreground">
             About
           </Link>
-          <Link href="/frn" className="hover:text-foreground">
+          <Link href="/frt" className="hover:text-foreground">
             Lookup
           </Link>
         </nav>

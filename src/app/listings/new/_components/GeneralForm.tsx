@@ -9,17 +9,10 @@ import {
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
 import { ImageUploader } from "./ImageUploader";
+import { useListingForm } from "./ListingState";
 
-type GeneralFormProps = {
-  title: string;
-  description: string;
-  price: number;
-};
-
-export const GeneralForm: React.FC<{
-  value: GeneralFormProps;
-  onChange: (value: GeneralFormProps) => void;
-}> = ({ value, onChange }) => {
+export const GeneralForm: React.FC = () => {
+  const { state, update } = useListingForm();
   return (
     <div className="space-y-4">
       <div className="space-y-2">
@@ -29,15 +22,18 @@ export const GeneralForm: React.FC<{
       <div className="space-y-2">
         <Label>Title</Label>
         <Input
-          value={value.title}
-          onChange={(e) => onChange({ ...value, title: e.target.value })}
+          value={state.title}
+          onChange={(e) => update({ title: e.target.value })}
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label>Condition</Label>
-          <Select>
+          <Select
+            value={state.condition}
+            onValueChange={(value) => update({ condition: value })}
+          >
             <SelectTrigger className="w-full">
               <SelectValue />
             </SelectTrigger>
@@ -54,10 +50,8 @@ export const GeneralForm: React.FC<{
         <div className="space-y-2">
           <Label>Price</Label>
           <Input
-            value={value.price}
-            onChange={(e) =>
-              onChange({ ...value, price: e.target.valueAsNumber })
-            }
+            value={Number(state.price)}
+            onChange={(e) => update({ price: e.target.valueAsNumber })}
           />
         </div>
       </div>
@@ -66,8 +60,8 @@ export const GeneralForm: React.FC<{
         <Label>Description</Label>
         <Textarea
           placeholder="Add details..."
-          value={value.description}
-          onChange={(e) => onChange({ ...value, description: e.target.value })}
+          value={state.description}
+          onChange={(e) => update({ description: e.target.value })}
         />
       </div>
     </div>

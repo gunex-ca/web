@@ -1,15 +1,51 @@
-import { Search } from "./_components/Search";
+import type { Metadata } from "next";
 import Navbar from "~/app/_components/Navbar";
+import { Badge } from "~/components/ui/badge";
 import { Label } from "~/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "~/components/ui/popover";
-import { Badge } from "~/components/ui/badge";
 import { Select, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { typesense } from "~/server/typesense/client";
 import type { FRTV1 } from "~/server/typesense/schemas";
+import { Search } from "./_components/Search";
+
+export const metadata: Metadata = {
+  title: "RCMP Firearms Reference Table (FRT) Search | Gunex",
+  description:
+    "Search the RCMP Firearms Reference Table (FRT) on Gunex by FRN, manufacturer, model, country, action and calibre.",
+  keywords: [
+    "RCMP",
+    "FRT",
+    "Firearms Reference Table",
+    "FRN",
+    "firearms",
+    "guns",
+    "Canada",
+    "manufacturer",
+    "model",
+    "calibre",
+  ],
+  openGraph: {
+    title: "RCMP Firearms Reference Table (FRT) Search | Gunex",
+    description:
+      "Search the RCMP Firearms Reference Table (FRT) on Gunex by FRN, manufacturer, model, country, action and calibre.",
+    url: "/frt",
+    siteName: "Gunex",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "RCMP Firearms Reference Table (FRT) Search | Gunex",
+    description:
+      "Search the RCMP Firearms Reference Table (FRT) on Gunex by FRN, manufacturer, model, country, action and calibre.",
+  },
+  alternates: {
+    canonical: "/frt",
+  },
+};
 
 const FilterOptions: React.FC = () => {
   return (
@@ -95,17 +131,6 @@ function formatLegalClassLabel(raw: string | undefined): string {
   return normalized.replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function legalClassToVariant(
-  raw: string | undefined
-): "default" | "secondary" | "destructive" | "outline" {
-  if (!raw) return "outline";
-  const v = raw.toLowerCase();
-  if (v.includes("prohib")) return "destructive";
-  if (v.includes("restrict")) return "default";
-  if (v.includes("non")) return "secondary";
-  return "outline";
-}
-
 export default async function FRT({
   searchParams,
 }: {
@@ -125,7 +150,7 @@ export default async function FRT({
   const searchResult = await collection.documents().search({
     q,
     query_by: ["frn", "manufacturer", "model", "country", "action", "calibres"],
-    query_by_weights: [100, 10, 50, 10, 10, 10],
+    query_by_weights: [100, 30, 50, 10, 10, 10],
     per_page: perPage,
     page: pageNumber,
   });
@@ -134,7 +159,7 @@ export default async function FRT({
     <>
       <Navbar />
       <Search />
-      <div className="container mx-auto max-w-7xl px-4 py-2">
+      <div className="container mx-auto max-w-7xl py-2">
         <div className="flex flex-col gap-6 md:flex-row">
           <div className="md:w-1/4">
             <FilterOptions />
@@ -158,10 +183,10 @@ export default async function FRT({
                             hit.document.legal_class === "Prohibited"
                               ? "bg-destructive/10 text-destructive"
                               : hit.document.legal_class === "Restricted"
-                              ? "bg-yellow-500/10 text-yellow-500"
-                              : hit.document.legal_class === "Non-Restricted"
-                              ? "bg-green-500/10 text-green-500"
-                              : "bg-gray-500/10 text-gray-500"
+                                ? "bg-yellow-500/10 text-yellow-500"
+                                : hit.document.legal_class === "Non-Restricted"
+                                  ? "bg-green-500/10 text-green-500"
+                                  : "bg-gray-500/10 text-gray-500"
                           }`}
                         >
                           {formatLegalClassLabel(hit.document.legal_class)}

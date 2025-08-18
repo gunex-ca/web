@@ -111,7 +111,7 @@ export default function ListingPage({ params: _params }: PageProps) {
           />
           <div className="flex h-[calc(90vh-60px)] min-h-0 w-[450px] shrink-0 flex-col overflow-hidden">
             <div className="flex-grow space-y-4 overflow-y-scroll p-4 md:p-6">
-              <ListingBreadcrumbs category={listing.category} />
+              <ListingBreadcrumbs categoryId={listing.category} />
 
               <TitleSection title={listing.title} />
 

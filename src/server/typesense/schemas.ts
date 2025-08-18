@@ -5,15 +5,15 @@ const frtV1: CollectionCreateSchema = {
   fields: [
     { name: "id", type: "string" },
     { name: "frn", type: "string" },
-    { name: "type", type: "string" },
-    { name: "legal_class", type: "string" },
-    { name: "manufacturer", type: "string" },
-    { name: "country", type: "string" },
-    { name: "country_code", type: "string" },
-    { name: "model", type: "string" },
-    { name: "action", type: "string" },
+    { name: "type", type: "string", facet: true },
+    { name: "legal_class", type: "string", facet: true },
+    { name: "manufacturer", type: "string", facet: true },
+    { name: "country", type: "string", facet: true },
+    { name: "country_code", type: "string", facet: true },
+    { name: "model", type: "string", facet: true },
+    { name: "action", type: "string", facet: true },
     { name: "calibres", type: "string[]", optional: true },
-    { name: "pages", type: "int32[]" },
+    { name: "pages", type: "int32[]", facet: true },
     { name: "images", type: "string[]", optional: true },
   ],
 };
@@ -31,6 +31,51 @@ export type FRTV1 = {
   calibres: string[];
   pages: number[];
   images: string[];
+};
+
+const listingV1: CollectionCreateSchema = {
+  name: "listing_v1",
+  enable_nested_fields: true,
+  fields: [
+    { name: "id", type: "string" },
+    { name: "public_id", type: "string" },
+    { name: "category", type: "string", facet: true },
+    { name: "sub_category", type: "string", facet: true },
+
+    { name: "title", type: "string" },
+    { name: "description", type: "string" },
+    { name: "properties", type: "object" },
+
+    { name: "price", type: "float" },
+
+    { name: "location", type: "geopoint" },
+    { name: "province", type: "string", facet: true },
+    { name: "city", type: "string", facet: true },
+
+    { name: "status", type: "string", facet: true },
+
+    {
+      name: "embedding",
+      type: "float[]",
+      embed: {
+        from: ["title", "description"],
+        model_config: {
+          model_name: "ts/all-MiniLM-L12-v2",
+        },
+      },
+    },
+  ],
+};
+
+export type ListingV1 = {
+  id: string;
+  public_id: string;
+  category: string;
+  sub_category: string;
+  title: string;
+  description: string;
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  properties: Record<string, any>;
 };
 
 export const schemas = [frtV1];

@@ -8,6 +8,13 @@ import {
   manufacturers,
 } from "~/lib/categories/gun-manufacturer";
 import { ComboBox } from "./ComboBox";
+import {
+  FirearmsManufacturerInput,
+  FirearmsManufacturerModelInput,
+} from "./FirearmsInputs";
+import { useListingForm } from "./ListingState";
+import { Input } from "~/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
 type FirearmsRifleProperties = {
   manufacturer: string;
@@ -28,75 +35,68 @@ export const useFirearmsRifleProperties = () => {
   return { value, setValue, onChange: setValue };
 };
 
-export const FirearmsRifleCreateForm: React.FC<{
-  value: FirearmsRifleProperties;
-  onChange?: (value: FirearmsRifleProperties) => void;
-}> = ({ value, onChange }) => {
+export const FirearmsRifleCreateForm: React.FC = () => {
+  const { state, update } = useListingForm();
   const models = useMemo(
-    () => guns.filter((g) => g.manufacturer === value.manufacturer),
-    [value.manufacturer],
+    () => guns.filter((g) => g.manufacturer === state.properties.manufacturer),
+    [state.properties.manufacturer]
   );
 
   const model = useMemo(
-    () => models.find((m) => m.model === value.model),
-    [value.model, models],
+    () => models.find((m) => m.model === state.properties.model),
+    [state.properties.model, models]
   );
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>Manufacturer</Label>
-        <ComboBox
-          value={value.manufacturer}
+        <FirearmsManufacturerInput
+          value={String(state.properties.manufacturer ?? "")}
           onChange={(e) => {
-            onChange?.({ ...value, manufacturer: e });
+            update({ properties: { ...state.properties, manufacturer: e } });
           }}
-          options={[
-            { label: "(Other)", value: "other" },
-            ...manufacturers.map((m) => ({ label: m, value: m })),
-          ]}
         />
       </div>
       <div className="space-y-2">
         <Label>Model</Label>
-        <ComboBox
-          disabled={value.manufacturer === "" || value.manufacturer === "other"}
-          empty={value.manufacturer === "other" ? "Enter model" : "Other"}
-          value={value.model}
+        <FirearmsManufacturerModelInput
+          manufacturer={String(state.properties.manufacturer ?? "")}
+          value={String(state.properties.model ?? "")}
           onChange={(e) => {
             const model = models.find((m) => m.model === e);
             if (e === "other") {
-              onChange?.({
-                ...value,
-                model: e,
-                action: "",
-                legalClass: "",
-                caliber: "",
+              update({
+                properties: {
+                  ...state.properties,
+                  model: e,
+                  action: "",
+                  legalClass: "",
+                  caliber: "",
+                },
               });
               return;
             }
-            onChange?.({
-              ...value,
-              model: model?.model ?? e,
-              action: model?.action ?? "",
-              legalClass: model?.legal_class ?? "",
-              caliber: model?.calibres[0] ?? "other",
+            update({
+              properties: {
+                ...state.properties,
+                model: model?.model ?? e,
+                action: model?.action ?? "",
+                legalClass: model?.legal_class ?? "",
+                caliber: model?.calibres[0] ?? "other",
+              },
             });
           }}
-          options={[
-            { label: "(Other)", value: "other" },
-            ...models.map((m) => ({ label: m.model, value: m.model })),
-          ]}
         />
       </div>
 
       <div className="space-y-2">
         <Label>Action</Label>
         <ComboBox
-          value={value.action}
+          value={String(state.properties.action ?? "")}
           suggestions={model?.action ? [model.action] : []}
           onChange={(e) => {
-            onChange?.({ ...value, action: e });
+            update({ properties: { ...state.properties, action: e } });
           }}
           options={[
             { label: "(Other)", value: "other" },
@@ -104,24 +104,26 @@ export const FirearmsRifleCreateForm: React.FC<{
           ]}
         />
       </div>
+
       <div className="space-y-2">
         <Label>Classification</Label>
         <ComboBox
-          value={value.legalClass}
+          value={String(state.properties.legalClass ?? "")}
           suggestions={model?.legal_class ? [model.legal_class] : []}
           onChange={(e) => {
-            onChange?.({ ...value, legalClass: e });
+            update({ properties: { ...state.properties, legalClass: e } });
           }}
           options={legalClasses.map((a) => ({ label: a, value: a }))}
         />
       </div>
+
       <div className="space-y-2">
         <Label>Caliber</Label>
         <ComboBox
-          value={value.caliber}
+          value={String(state.properties.caliber ?? "")}
           suggestions={model?.calibres}
           onChange={(e) => {
-            onChange?.({ ...value, caliber: e });
+            update({ properties: { ...state.properties, caliber: e } });
           }}
           options={[
             { label: "(Other)", value: "other" },
@@ -129,6 +131,38 @@ export const FirearmsRifleCreateForm: React.FC<{
             ...calibers.map((a) => ({ label: a, value: a })),
           ]}
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Sights</Label>
+        <Input
+          value={String(state.properties.sights ?? "")}
+          onChange={(e) => {
+            update({
+              properties: { ...state.properties, sights: e.target.value },
+            });
+          }}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label>Handed</Label>
+        <RadioGroup
+          value={String(state.properties.handed ?? "")}
+          onValueChange={(e) => {
+            update({ properties: { ...state.properties, handed: e } });
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <RadioGroupItem value="Left Handed" id="r1" />
+            <Label htmlFor="r1">Left Handed</Label>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <RadioGroupItem value="Right Handed or Ambidextrous" id="r2" />
+            <Label htmlFor="r2">Right Handed or Ambidextrous</Label>
+          </div>
+        </RadioGroup>
       </div>
     </div>
   );

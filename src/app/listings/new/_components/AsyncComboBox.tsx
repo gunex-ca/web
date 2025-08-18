@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckIcon, ChevronsUpDownIcon } from "lucide-react";
+import { CheckIcon, ChevronsUpDownIcon, Loader2 } from "lucide-react";
 import type React from "react";
 import { type ReactNode, useLayoutEffect, useRef, useState } from "react";
 import { Badge } from "~/components/ui/badge";
@@ -20,23 +20,28 @@ import {
 } from "~/components/ui/popover";
 import { cn } from "~/components/utils";
 
-export const ComboBox: React.FC<{
+export const AsyncComboBox: React.FC<{
   placeholder?: string;
   disabled?: boolean;
   empty?: ReactNode;
   value?: string;
+  onSearchChange?: (value: string) => void;
   onChange?: (value: string) => void;
   options: { label: string; value: string }[];
   suggestions?: string[];
-}> = ({
-  onChange,
-  placeholder = "",
-  empty,
-  value,
-  options,
-  disabled,
-  suggestions,
-}) => {
+  isLoading?: boolean;
+}> = (props) => {
+  const {
+    onSearchChange,
+    onChange,
+    placeholder = "",
+    empty,
+    value,
+    options,
+    disabled,
+    suggestions,
+    isLoading,
+  } = props;
   const [open, setOpen] = useState(false);
 
   const suggestedOptions = options
@@ -76,8 +81,15 @@ export const ComboBox: React.FC<{
         style={{ width: "var(--radix-popover-trigger-width)" }}
         align="start"
       >
-        <Command>
-          <CommandInput placeholder={placeholder} />
+        <Command shouldFilter={false}>
+          <CommandInput
+            isLoading={isLoading}
+            placeholder={placeholder}
+            onValueChange={(value) => {
+              onSearchChange?.(value);
+            }}
+          />
+
           <CommandList>
             {empty && <CommandEmpty>{empty}</CommandEmpty>}
             <CommandGroup>
@@ -93,7 +105,7 @@ export const ComboBox: React.FC<{
                   <CheckIcon
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0",
+                      value === option.value ? "opacity-100" : "opacity-0"
                     )}
                   />
                   {option.label}

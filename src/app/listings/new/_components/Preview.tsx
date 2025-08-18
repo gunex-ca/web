@@ -1,7 +1,19 @@
-import { ImageCarousel } from "~/app/(search)/listings/[listing]/_components/ImageCarousel";
-import { SellerSection } from "~/app/(search)/listings/[listing]/_components/SellersSection";
+"use client";
 
-export const Preview = () => {
+import { capitalCase } from "change-case";
+import { DescriptionSection } from "~/app/(search)/listings/[listing]/_components/DescriptionSection";
+import { DetailsSection } from "~/app/(search)/listings/[listing]/_components/DetailsSection";
+import { ImageCarousel } from "~/app/(search)/listings/[listing]/_components/ImageCarousel";
+import { ListingBreadcrumbs } from "~/app/(search)/listings/[listing]/_components/ListingBreadcrumbs";
+import { LocationMap } from "~/app/(search)/listings/[listing]/_components/LocationMap";
+import { MetaRow } from "~/app/(search)/listings/[listing]/_components/MetaRow";
+import { PriceSection } from "~/app/(search)/listings/[listing]/_components/PriceSection";
+import { SellerSection } from "~/app/(search)/listings/[listing]/_components/SellersSection";
+import { TitleSection } from "~/app/(search)/listings/[listing]/_components/TitleSection";
+import { useListingForm } from "./ListingState";
+
+export const Preview: React.FC = () => {
+  const { state } = useListingForm();
   const images = [
     {
       id: "1",
@@ -42,6 +54,29 @@ export const Preview = () => {
       />
       <div className=" h-[calc(50vh-60px)] shrink-0 flex-col overflow-scroll">
         <div className="flex-grow space-y-4 overflow-y-scroll p-4 md:p-6">
+          <ListingBreadcrumbs categoryId={state.categoryId} />
+
+          <TitleSection title={state.title || "Untitled"} />
+
+          <PriceSection price={`$${state.price.toLocaleString()}`} />
+
+          <MetaRow createdAt={new Date()} location={"Unknown"} />
+
+          <DetailsSection
+            properties={{
+              condition: capitalCase(state.condition),
+              ...state.properties,
+            }}
+          />
+
+          <DescriptionSection
+            description={state.description || "No description"}
+          />
+
+          <div className="h-[150px] rounded-md border">
+            <LocationMap lat={43.65107} lng={-79.347015} />
+          </div>
+
           <SellerSection
             seller={{
               username: "johndoe",

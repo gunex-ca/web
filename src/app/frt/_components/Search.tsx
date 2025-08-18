@@ -1,10 +1,11 @@
 "use client";
 
 import { SearchIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "~/components/ui/input";
 
 export const Search: React.FC = () => {
+  const searchParams = useSearchParams();
   const router = useRouter();
   return (
     <div className="container mx-auto max-w-7xl items-center gap-2 space-y-2 px-4 py-2">
@@ -13,6 +14,7 @@ export const Search: React.FC = () => {
           type="text"
           placeholder="Search for a firearm..."
           className="w-full bg-transparent! pr-10"
+          defaultValue={searchParams.get("q") ?? ""}
           onChange={(e) => {
             router.push(`/frt?q=${e.target.value}`);
           }}

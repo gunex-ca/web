@@ -1,4 +1,5 @@
-import { typesense } from "./server/typesense/client";
+import { env } from "./env";
+import { createNLSearchModel, typesense } from "./server/typesense/client";
 import { schemas } from "./server/typesense/schemas";
 
 export async function register() {
@@ -12,6 +13,15 @@ export async function register() {
           console.error("Error creating collection", schema.name, error);
         }
       }
+    }
+    if (env.OPENAI_API_KEY != null) {
+      await createNLSearchModel({
+        id: "gpt-4o-base",
+        model_name: "openai/gpt-4o",
+        api_key: env.OPENAI_API_KEY,
+        max_bytes: 1024 * 1024 * 10,
+        temperature: 0.1,
+      });
     }
   }
 }

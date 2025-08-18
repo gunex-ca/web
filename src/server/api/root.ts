@@ -1,5 +1,6 @@
 import { listingRouter } from "~/server/api/routers/listings";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
+import { searchRouter } from "./routers/search";
 
 /**
  * This is the primary router for your server.
@@ -8,6 +9,7 @@ import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   listing: listingRouter,
+  search: searchRouter,
 });
 
 // export type definition of API
