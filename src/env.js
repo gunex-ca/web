@@ -11,6 +11,12 @@ export const env = createEnv({
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),
+    INTERNAL_AUTH_TOKEN: z.string().default("secret"),
+
+    TYPESENSE_HOST: z.string().default("localhost"),
+    TYPESENSE_PORT: z.number().default(8108),
+    TYPESENSE_API_KEY: z.string().default("secret"),
+    OPENAI_API_KEY: z.string().optional(),
   },
 
   /**
@@ -27,8 +33,13 @@ export const env = createEnv({
    * middlewares) or client-side so we need to destruct manually.
    */
   runtimeEnv: {
+    INTERNAL_AUTH_TOKEN: process.env.INTERNAL_AUTH_TOKEN,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
+    TYPESENSE_HOST: process.env.TYPESENSE_HOST,
+    TYPESENSE_PORT: process.env.TYPESENSE_PORT,
+    TYPESENSE_API_KEY: process.env.TYPESENSE_API_KEY,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

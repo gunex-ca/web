@@ -27,6 +27,9 @@ export default async function Navbar({
           <Link href="/about" className="hover:text-foreground">
             About
           </Link>
+          <Link href="/frn" className="hover:text-foreground">
+            Lookup
+          </Link>
         </nav>
 
         <div className="flex items-center gap-2">

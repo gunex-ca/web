@@ -3,12 +3,29 @@ import json
 from tqdm import tqdm
 import re
 from collections import defaultdict
+from peewee import *
 
+db = SqliteDatabase("guns.db")
+
+class BaseModel(Model):
+    class Meta:
+        database = db
+
+class Gun(BaseModel):
+    frn = CharField(primary_key=True)
+    type = CharField()
+    manufacturer = CharField()
+    model = CharField()
+    action = CharField()
+    legal_class = CharField()
+    country_code = CharField()
+    calibres = CharField()
+    pages = CharField()
 
 countries = {
     "UNITED STATES OF AMERICA": "US",
     "CANADA": "CA",
-    "UNITED KINGDOM": "UK",
+    "UNITED KINGDOM": "GB",
     "SPAIN": "ES",
     "ITALY": "IT",
     "HUNGARY": "HU",
@@ -19,6 +36,83 @@ countries = {
     "TURKEY": "TR",
     "JAPAN": "JP",
     "BOSNIA-HERZEGOVINA": "BA",
+    "AUSTRIA": "AT",
+    "SWEDEN": "SE",
+    "DENMARK": "DK",
+    "NORWAY": "NO",
+    "FINLAND": "FI",
+    "POLAND": "PL",
+    "CZECH REPUBLIC": "CZ",
+    "FRANCE": "FR",
+    "NETHERLANDS": "NL",
+    "PORTUGAL": "PT",
+    "RUSSIAN FEDERATION": "RU",
+    "SWITZERLAND": "CH",
+    "UNITED ARAB EMIRATES": "AE",
+    "VENEZUELA": "VE",
+    "FRANCE": "FR",
+    "GREECE": "GR",
+    "SERBIA": "RS",
+    "CZECHOSLOVAKIA": "CZ",
+    "YUGOSLAVIA": "RS",
+    "RUSSIA": "RU",
+    "GERMANY, WEST": "DE",
+    "GERMANY, EAST": "DE",
+    "TAIWAN": "TW",
+    "KOREA, SOUTH": "KR",
+    "ARGENTINA": "AR",
+    "RHODESIA": "ZW",
+    "PHILIPPINES": "PH",
+    "BRAZIL": "BR",
+    "PAKISTAN": "PK",
+    "CHILE": "CL",
+    "ROMANIA": "RO",
+    "SINGAPORE": "SG",
+    "AUSTRALIA": "AU",
+    "NEW ZEALAND": "NZ",
+    "IRELAND": "IE",
+    "BURMA": "MM",
+    "MEXICO": "MX",
+    "BULGARIA": "BG",
+    "SOUTH AFRICA": "ZA",
+    "INDIA": "IN",
+    "INDONESIA": "ID",
+    "ALBANIA": "AL",
+    "SLOVENIA": "SI",
+    "CROATIA": "HR",
+    "DOMINICAN REPUBLIC": "DO",
+    "CONFEDERATE STATES OF AMERICA": "US",
+    "NIGERIA": "NG",
+    "MOROCCO": "MA",
+    "TUNISIA": "TN",
+    "MANCHURIA": "CN",
+    "AZERBAIJAN": "AZ",
+    "ESTONIA": "EE",
+    "EGYPT": "EG",
+    "IRAQ": "IQ",
+    "UNITED ARAB REPUBLIC": "AE",
+    "KOREA, NORTH": "KP",
+    "IRAN": "IR",
+    "UKRAINE": "UA",
+    "SAUDI ARABIA": "SA",
+    "SLOVAKIA (SLOVAK REPUBLIC)": "SK",
+    "COLOMBIA": "CO",
+    "JORDAN": "JO",
+    "KAZAKHSTAN": "KZ",
+    "VIETNAM": "VN",
+    "THAILAND": "TH",
+    "KOREA, REPUBLIC OF": "KR",
+    "MALAYSIA": "MY",
+    "LUXEMBOURG": "LU",
+    "NEPAL": "NP",
+    "MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF": "MK",
+    "PERU": "PE",
+    "VIETNAM, NORTH": "VN",
+    "MONTENEGRO": "ME",
+}
+
+MANUFACTURERS = {
+    
 }
 
 KNOWN_LABELS = [
@@ -33,7 +127,7 @@ KNOWN_LABELS = [
 
 if __name__ == "__main__":
 
-    MAX_PAGES = 200_000
+    MAX_PAGES = 107_191
 
     pdf_path = Path("./frt-0811.pdf").expanduser().resolve()
 
@@ -66,47 +160,69 @@ if __name__ == "__main__":
             json.dump(pages, f, ensure_ascii=False)
         print(f"Saved {len(pages)} pages to {chunk_file}")
 
-    existing_pages = load_existing_chunks()
-    total_existing = len(existing_pages)
-    
-    if total_existing < MAX_PAGES:
-        if existing_pages:
-            print(f"Have {total_existing} pages cached, need {MAX_PAGES}. Extracting more…")
-        else:
-            print(f"No cached pages found. Extracting from PDF…")
-        
-        import pdfplumber
-        with pdfplumber.open(pdf_path) as pdf:
-            total_pages = len(pdf.pages)
-            target_count = min(MAX_PAGES, total_pages)
-            
-            # Start from where we left off
-            start_idx = total_existing
-            current_chunk = []
-            pages_processed = total_existing
-            
-            for idx in tqdm(range(start_idx, target_count), total=target_count-start_idx, desc="Extracting", unit="page"):
-                text = pdf.pages[idx].extract_text()
-                current_chunk.append(text if text is not None else "")
-                pages_processed += 1
-                
-                # Save chunk every CHUNK_SIZE pages
-                if len(current_chunk) == CHUNK_SIZE:
-                    chunk_num = pages_processed // CHUNK_SIZE
-                    save_chunk(current_chunk, chunk_num)
-                    current_chunk = []  # Clear chunk after saving
-            
-            # Save final partial chunk if needed
-            if current_chunk:
-                final_chunk_num = (pages_processed // CHUNK_SIZE) + 1
-                save_chunk(current_chunk, final_chunk_num)
-                
-        print(f"Extraction complete: {pages_processed} total pages")
-        # Reload all chunks for processing
+    def check_all_chunks_exist(max_pages: int) -> bool:
+        """Check if all required chunk files exist for the target page count."""
+        required_chunks = (max_pages + CHUNK_SIZE - 1) // CHUNK_SIZE  # Ceiling division
+        for chunk_num in range(1, required_chunks + 1):
+            chunk_file = Path(f"guns-{chunk_num}.json")
+            if not chunk_file.exists():
+                return False
+        return True
+
+    # Check if we can skip extraction entirely
+    if check_all_chunks_exist(MAX_PAGES):
+        print(f"All chunk files exist for {MAX_PAGES} pages. Skipping extraction.")
         page_texts = load_existing_chunks()
     else:
-        print(f"Using existing {total_existing} pages from cache")
-        page_texts = existing_pages
+        existing_pages = load_existing_chunks()
+        total_existing = len(existing_pages)
+        
+        if total_existing < MAX_PAGES:
+            if existing_pages:
+                print(f"Have {total_existing} pages cached, need {MAX_PAGES}. Extracting more…")
+            else:
+                print(f"No cached pages found. Extracting from PDF…")
+            
+            import pdfplumber
+            with pdfplumber.open(pdf_path) as pdf:
+                total_pages = len(pdf.pages)
+                target_count = min(MAX_PAGES, total_pages)
+                
+                # Process in chunks, skipping existing ones
+                start_idx = total_existing
+                pages_processed = total_existing
+                
+                # Calculate which chunks we need to process
+                start_chunk = (start_idx // CHUNK_SIZE) + 1
+                end_chunk = (target_count + CHUNK_SIZE - 1) // CHUNK_SIZE
+                
+                for chunk_num in range(start_chunk, end_chunk + 1):
+                    chunk_file = Path(f"guns-{chunk_num}.json")
+                    
+                    if chunk_file.exists():
+                        print(f"Skipping chunk {chunk_num} - {chunk_file} already exists")
+                        pages_processed += CHUNK_SIZE
+                        continue
+                    
+                    # Extract this chunk
+                    chunk_start = (chunk_num - 1) * CHUNK_SIZE
+                    chunk_end = min(chunk_start + CHUNK_SIZE, target_count)
+                    current_chunk = []
+                    
+                    print(f"Extracting chunk {chunk_num} (pages {chunk_start + 1}-{chunk_end})")
+                    for idx in tqdm(range(chunk_start, chunk_end), desc=f"Chunk {chunk_num}", unit="page"):
+                        text = pdf.pages[idx].extract_text()
+                        current_chunk.append(text if text is not None else "")
+                        pages_processed += 1
+                    
+                    save_chunk(current_chunk, chunk_num)
+                    
+            print(f"Extraction complete: {pages_processed} total pages")
+            # Reload all chunks for processing
+            page_texts = load_existing_chunks()
+        else:
+            print(f"Using existing {total_existing} pages from cache")
+            page_texts = existing_pages
 
 
     frn_groups = defaultdict(list)
@@ -173,7 +289,6 @@ if __name__ == "__main__":
     guns = []
 
     for frn, pages in frn_groups.items():
-        print(f"Processing: {frn}")
         combined_text = "\n".join(page_text for _, page_text in pages)
         manufacturer = extract_value(combined_text, "Manufacturer")
         make = extract_value(combined_text, "Make")
@@ -187,7 +302,7 @@ if __name__ == "__main__":
 
         manufacturer = make or manufacturer
 
-        if country_code == "Unknown":
+        if country_code == "Unknown" and country != "":
             print(f"\033[93mWARNING: Unknown country code for '{country}'\033[0m")
 
         header = f"FRN: {frn}" if frn is not None else "FRN not found"
@@ -230,6 +345,11 @@ if __name__ == "__main__":
 
     with open("guns.json", "w", encoding="utf-8") as f:
         json.dump(guns, f, ensure_ascii=False, indent=2)
+
+    # Also write to guns.jsonl
+    with open("guns.jsonl", "w", encoding="utf-8") as f_jsonl:
+        for gun in guns:
+            f_jsonl.write(json.dumps(gun, ensure_ascii=False) + "\n")
 
     # Get all unique manufacturers from the generated guns list
     manufacturers = sorted(set(gun["manufacturer"] for gun in guns if gun.get("manufacturer")))

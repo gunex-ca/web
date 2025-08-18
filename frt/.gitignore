@@ -1,2 +1,4 @@
 *.pdf
 *.json
+*.jsonl
+!images.json

@@ -1,5 +1,5 @@
-import Navbar from "../_components/Navbar";
 import type { Metadata } from "next";
+import Navbar from "../_components/Navbar";
 
 export default function RootLayout({
   children,

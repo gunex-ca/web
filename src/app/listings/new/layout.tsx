@@ -1,5 +1,5 @@
-import Navbar from "~/app/_components/Navbar";
 import type { Metadata } from "next";
+import Navbar from "~/app/_components/Navbar";
 
 export default function ListingsLayout({
   children,
