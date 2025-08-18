@@ -5,6 +5,7 @@ import { Geist } from "next/font/google";
 
 import { ThemeProvider } from "next-themes";
 import { TRPCReactProvider } from "~/trpc/react";
+import Navbar from "./_components/Navbar";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -30,7 +31,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <TRPCReactProvider>{children}</TRPCReactProvider>
+          <TRPCReactProvider>
+            <Navbar />
+            {children}
+          </TRPCReactProvider>
         </ThemeProvider>
       </body>
     </html>

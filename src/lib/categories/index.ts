@@ -1,281 +1,188 @@
-import { z } from "zod";
+import slugify from "slugify";
 
-// Category/property field DSL + Zod validation builder
-
-export type SelectOption = { value: string; label: string };
-
-export type BaseField = {
+export type Subcategory = {
   id: string;
-  label: string;
-  required?: boolean;
+  name: string;
+  slug: string;
+  parentId: string;
 };
 
-export type TextField = BaseField & {
-  type: "text";
-  minLength?: number;
-  maxLength?: number;
-  pattern?: RegExp;
+export type Category = {
+  id: string;
+  name: string;
+  slug: string;
+  children: Subcategory[];
 };
 
-export type NumberField = BaseField & {
-  type: "number";
-  min?: number;
-  max?: number;
-};
-
-export type BooleanField = BaseField & {
-  type: "boolean";
-};
-
-export type SelectField = BaseField & {
-  type: "select" | "multiselect";
-  options?: SelectOption[];
-  // Dependent select: options depend on another field's value
-  dependsOnFieldId?: string;
-  optionsByParent?: Record<string, SelectOption[]>;
-};
-
-export type PropertyField =
-  | TextField
-  | NumberField
-  | BooleanField
-  | SelectField;
-
-export type PropertySchemaSpec = {
-  fields: PropertyField[];
-};
-
-function buildFieldSchema(field: PropertyField): z.ZodTypeAny {
-  switch (field.type) {
-    case "text": {
-      let s = z.string();
-      if (typeof field.minLength === "number") s = s.min(field.minLength);
-      if (typeof field.maxLength === "number") s = s.max(field.maxLength);
-      if (field.pattern) s = s.regex(field.pattern);
-      return field.required ? s : s.optional();
-    }
-    case "number": {
-      let s = z.number({
-        invalid_type_error: `${field.label} must be a number`,
-      });
-      if (typeof field.min === "number") s = s.min(field.min);
-      if (typeof field.max === "number") s = s.max(field.max);
-      return field.required ? s : s.optional();
-    }
-    case "boolean": {
-      const s = z.boolean();
-      return field.required ? s : s.optional();
-    }
-    case "select":
-    case "multiselect": {
-      // Validate allowed options at runtime to keep this fully data-driven
-      const allowed = new Set((field.options ?? []).map((o) => o.value));
-
-      const baseString = z
-        .string()
-        .refine((v) => (allowed.size === 0 ? true : allowed.has(v)), {
-          message: `${field.label} has an invalid value`,
-        });
-
-      const s = field.type === "multiselect" ? z.array(baseString) : baseString;
-      return field.required ? s : s.optional();
-    }
-    default: {
-      // Exhaustive check to aid maintainability
-      const _exhaustive: never = field;
-      return _exhaustive;
-    }
-  }
-}
-
-export function buildPropertiesZod(
-  spec: PropertySchemaSpec,
-): z.ZodEffects<z.ZodObject<Record<string, z.ZodTypeAny>>> {
-  const shape: Record<string, z.ZodTypeAny> = {};
-
-  for (const f of spec.fields) {
-    shape[f.id] = buildFieldSchema(f);
-  }
-
-  // Cross-field validation for dependent selects
-  return z.object(shape).superRefine((data, ctx) => {
-    for (const field of spec.fields) {
-      if (
-        (field.type === "select" || field.type === "multiselect") &&
-        field.dependsOnFieldId
-      ) {
-        const parentValue = data[field.dependsOnFieldId];
-        const currentValue = data[field.id];
-
-        if (currentValue === undefined) continue;
-
-        const optionsByParent = field.optionsByParent ?? {};
-        const optionsForParent = Array.isArray(optionsByParent[parentValue])
-          ? optionsByParent[parentValue]
-          : [];
-        const allowed = new Set(optionsForParent.map((o) => o.value));
-
-        if (field.type === "select") {
-          if (
-            typeof currentValue === "string" &&
-            allowed.size > 0 &&
-            !allowed.has(currentValue)
-          ) {
-            ctx.addIssue({
-              code: z.ZodIssueCode.custom,
-              path: [field.id],
-              message: `${field.label} is not valid for selected ${field.dependsOnFieldId}`,
-            });
-          }
-        } else {
-          if (Array.isArray(currentValue) && allowed.size > 0) {
-            for (const v of currentValue) {
-              if (!allowed.has(v)) {
-                ctx.addIssue({
-                  code: z.ZodIssueCode.custom,
-                  path: [field.id],
-                  message: `${field.label} contains an invalid option for selected ${field.dependsOnFieldId}`,
-                });
-                break;
-              }
-            }
-          }
-        }
-      }
-    }
+function makeCategory(name: string, subcategoryNames: string[]): Category {
+  const slug = slugify(name, { lower: true });
+  const id = slug;
+  const children: Subcategory[] = subcategoryNames.map((childName) => {
+    const childSlug = slugify(childName, { lower: true });
+    return {
+      id: `${slug}:${childSlug}`,
+      name: childName,
+      slug: childSlug,
+      parentId: id,
+    };
   });
+  return { id, name, slug, children };
 }
 
-type SubcategoryDef = {
-  id: string;
-  name: string;
-  description?: string;
-  slug: string;
-  properties: PropertySchemaSpec;
-};
+export const categories: Category[] = [
+  makeCategory("Firearms", [
+    "Rifles",
+    "Shotguns",
+    "Handguns",
+    "Muzzleloaders",
+    "Replicas or Deactivated",
+    "Flame Thrower",
+    "Blank Gun/Starter Pistol",
+    "Flare Gun",
+  ]),
+  makeCategory("Firearm Components, Accessories, & Tools", [
+    "Barrels",
+    "Conversion Kits (caliber change)",
+    "Choke Tubes",
+    "Muzzle Brakes & Flash Supp.",
+    "Stocks & Grips",
+    "Magazines & Clips",
+    "Iron/Open Sights",
+    "Slings",
+    "Swivels",
+    "Bipods",
+    "Firearm Care",
+    "Tools",
+    "Miscellaneous",
+  ]),
+  makeCategory("Shooting & Range Gear", [
+    "Holsters",
+    "Range Bags",
+    "Shooting Rests",
+    "Tac Belts & Belt Attachments",
+    "Tac Vests & Vest Attachments",
+    "Body Armour",
+    "Chronographs",
+    "Helmets",
+    "Ear Protection",
+    "Eye Protection",
+    "Miscellaneous",
+  ]),
+  makeCategory("Airgun & Airsoft", [
+    "Air Pistols",
+    "Air Rifles",
+    "Paintball Guns",
+    "Paintball Accessories",
+    "Accessories",
+    "Pellets & BBs (projectiles)",
+    "Miscellaneous",
+  ]),
+  makeCategory("Archery", [
+    "Bows",
+    "Bow Maintenance",
+    "Arrows & Broadheads",
+    "Bow Accessories",
+    "Miscellaneous",
+  ]),
+  makeCategory("Optics", [
+    "Rifle Scopes",
+    "Handgun Scopes",
+    "Crossbow Scopes",
+    "Red Dot / Reflex Sight",
+    "Laser Sights",
+    "Spotting Scopes",
+    "Binoculars/Monoculars",
+    "Range Finders",
+    "Rings/Bases/Mounts",
+    "Miscellaneous",
+  ]),
+  makeCategory("Ammunition", [
+    "Live Ammo",
+    "Blanks",
+    "Dummy Rounds",
+    "Miscellaneous",
+  ]),
+  makeCategory("Reloading", [
+    "Lead Casting Tools",
+    "Bullets & Brass",
+    "Smokeless Powder",
+    "Primers",
+    "Shotshell Reloading",
+    "Presses",
+    "Dies",
+    "Powder Handling & Scales",
+    "Tumblers",
+    "Tools & Accessories",
+    "Miscellaneous",
+  ]),
+  makeCategory("Muzzleloading Supplies", [
+    "Flints",
+    "Powder & Caps",
+    "Sabots & Lead Balls",
+    "Cleaning",
+    "Accessories",
+    "Miscellaneous",
+  ]),
+  makeCategory("Targets", [
+    "Paper Targets",
+    "Gongs",
+    "Tannerite",
+    "Throwers (skeet)",
+    "Clays",
+    "Archery Targets",
+    "Moving / Motorized Targets",
+    "Miscellaneous",
+  ]),
+  makeCategory("Cases & Storage", [
+    "Hard Cases",
+    "Soft Cases",
+    "Racks",
+    "Safes or Cabinets",
+    "Locks",
+    "Ammo Cans",
+    "Accessories",
+    "Miscellaneous",
+  ]),
+  makeCategory("Hunting", [
+    "Decoys",
+    "Game Calls",
+    "Trail Cameras",
+    "Treestands",
+    "Blinds",
+    "Packs",
+    "Clothing",
+    "Ghillie Suits",
+    "Trapping Supplies",
+    "Fishing Rods / Reels / Tackle",
+    "Taxidermy (mounts/hides/antlers)",
+    "Miscellaneous",
+  ]),
+  makeCategory("Blades", [
+    "Knives & Tools",
+    "Bayonets",
+    "Swords",
+    "Sharpeners",
+    "Sheaths",
+    "Miscellaneous",
+  ]),
+  makeCategory("Books", [
+    "Reloading Manuals",
+    "Firearm Literature",
+    "Hunting Literature",
+    "Military Literature",
+  ]),
+  makeCategory("Services", [
+    "Taxidermy",
+    "Gun Smithing",
+    "Firearms Training",
+    "Gun Shows/Events",
+    "Hunting Outfitters / Guides",
+  ]),
+];
 
-type CategoryDef = {
-  id: string;
-  name: string;
-  description?: string;
-  slug: string;
-  subcategories: Record<string, SubcategoryDef>;
-};
+// Fast lookup by URL slug
+export const CATEGORY: Record<string, Category> = Object.fromEntries(
+  categories.map((cat) => [cat.slug, cat])
+);
 
-type CategoriesDef = Record<string, CategoryDef>;
-
-export const CATEGORIES = {
-  FIREARMS: {
-    id: "firearms",
-    name: "Firearms",
-    description: "Firearms",
-    slug: "firearms",
-    subcategories: {
-      RIFLES: {
-        id: "rifles",
-        name: "Rifles",
-        description: "Rifles",
-        slug: "rifles",
-
-        properties: {
-          fields: [
-            {
-              id: "manufacturer",
-              label: "Manufacturer",
-              type: "select",
-              required: true,
-              options: [
-                { value: "remington", label: "Remington" },
-                { value: "ruger", label: "Ruger" },
-                { value: "sako", label: "Sako" },
-                { value: "other", label: "Other" },
-              ],
-            },
-            {
-              id: "model",
-              label: "Model",
-              type: "select",
-              required: true,
-              dependsOnFieldId: "manufacturer",
-              optionsByParent: {
-                remington: [
-                  { value: "700", label: "700" },
-                  { value: "870", label: "870" },
-                ],
-                ruger: [
-                  { value: "10_22", label: "10/22" },
-                  { value: "american", label: "American" },
-                ],
-                sako: [
-                  { value: "s20", label: "S20" },
-                  { value: "85", label: "85" },
-                ],
-              },
-            },
-            {
-              id: "caliber",
-              label: "Caliber",
-              type: "select",
-              required: true,
-              options: [
-                { value: "223_rem", label: ".223 Rem" },
-                { value: "308_win", label: ".308 Win" },
-                { value: "65_cm", label: "6.5 Creedmoor" },
-              ],
-            },
-            {
-              id: "action",
-              label: "Action",
-              type: "select",
-              required: true,
-              options: [
-                { value: "bolt", label: "Bolt" },
-                { value: "semi_auto", label: "Semi-auto" },
-                { value: "pump", label: "Pump" },
-                { value: "lever", label: "Lever" },
-              ],
-            },
-            {
-              id: "barrel_length_in",
-              label: "Barrel length (in)",
-              type: "number",
-              min: 1,
-              max: 48,
-              required: false,
-            },
-          ],
-        },
-      },
-    },
-  },
-} as const satisfies CategoriesDef;
-
-// Compiled Zod schemas per category/subcategory for validating listing.properties
-export const CATEGORY_PROPERTY_SCHEMAS = {
-  firearms: {
-    rifles: buildPropertiesZod(
-      CATEGORIES.FIREARMS.subcategories.RIFLES.properties,
-    ),
-  },
-} as const;
-
-export type CategorySlug = keyof typeof CATEGORY_PROPERTY_SCHEMAS; // e.g. "firearms"
-
-export function validateCategoryProperties(options: {
-  category: CategorySlug;
-  subcategory: string;
-  data: unknown;
-}) {
-  const { category, subcategory, data } = options;
-  const categorySchemas = CATEGORY_PROPERTY_SCHEMAS[category];
-  const schema = (categorySchemas as Record<string, z.ZodSchema | undefined>)[
-    subcategory
-  ];
-  if (!schema) {
-    return { success: true as const, data };
-  }
-  const parsed = schema.safeParse(data);
-  return parsed.success
-    ? { success: true as const, data: parsed.data }
-    : { success: false as const, issues: parsed.error.issues };
-}
+export type { Category as ListingCategory, Subcategory as ListingSubcategory };

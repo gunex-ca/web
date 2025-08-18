@@ -73,6 +73,14 @@ export const offerStatusEnum = pgEnum("offer_status", [
   "expired",
 ]);
 
+export const externalLinkStatusEnum = pgEnum("external_link_status", [
+  "linked",
+  "imported",
+  "synced",
+  "failed",
+  "unpublished",
+]);
+
 export const userStatusEnum = pgEnum("user_status", [
   "active",
   "suspended",
@@ -136,6 +144,9 @@ export const listing = pgTable(
     properties: jsonb("properties"),
 
     status: listingStatusEnum("status").default("draft").notNull(),
+    // Cross-post/import flags
+    imported: boolean("imported").default(false).notNull(),
+    importedAt: timestamp("imported_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -192,6 +203,34 @@ export const listingImage = pgTable(
   (table) => [index("listing_images_listing_id_idx").on(table.listingId)],
 );
 
+// Cross-post/external references
+export const listingExternal = pgTable(
+  "listing_external",
+  (t) => ({
+    id: t.uuid("id").primaryKey().notNull().defaultRandom(),
+    listingId: t
+      .uuid("listing_id")
+      .notNull()
+      .references(() => listing.id, { onDelete: "cascade" }),
+    platform: t.varchar("platform", { length: 64 }).notNull(),
+    externalId: t.varchar("external_id", { length: 128 }),
+    url: t.varchar("url", { length: 2048 }),
+    meta: t.jsonb("meta"),
+    firstSeenAt: t.timestamp("first_seen_at").defaultNow().notNull(),
+    lastSyncedAt: t.timestamp("last_synced_at"),
+    createdAt: t.timestamp("created_at").defaultNow().notNull(),
+    updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
+  }),
+  (table) => [
+    index("listing_external_listing_id_idx").on(table.listingId),
+    index("listing_external_platform_idx").on(table.platform),
+    uniqueIndex("listing_external_platform_external_id_uk").on(
+      table.platform,
+      table.externalId,
+    ),
+  ],
+);
+
 // Favorites (wishlists)
 export const favorite = pgTable(
   "favorite",
@@ -207,28 +246,6 @@ export const favorite = pgTable(
   },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
-  ],
-);
-
-// Offers (bids)
-export const offer = pgTable(
-  "offer",
-  {
-    id: uuid("id").primaryKey().defaultRandom().notNull(),
-    listingId: uuid("listing_id")
-      .notNull()
-      .references(() => listing.id, { onDelete: "cascade" }),
-    buyerId: uuid("buyer_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
-    amount: numeric("amount", { precision: 10, scale: 2 }).notNull(),
-    message: text("message"),
-    status: offerStatusEnum("status").default("pending").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-  },
-  (table) => [
-    index("offers_listing_id_idx").on(table.listingId),
-    index("offers_buyer_id_idx").on(table.buyerId),
   ],
 );
 
@@ -278,6 +295,7 @@ export const listingReport = pgTable(
 
 export const listingRelations = relations(listing, ({ many }) => ({
   images: many(listingImage),
+  externals: many(listingExternal),
 }));
 
 export const listingImageRelations = relations(listingImage, ({ one }) => ({
@@ -286,3 +304,13 @@ export const listingImageRelations = relations(listingImage, ({ one }) => ({
     references: [listing.id],
   }),
 }));
+
+export const listingExternalRelations = relations(
+  listingExternal,
+  ({ one }) => ({
+    listing: one(listing, {
+      fields: [listingExternal.listingId],
+      references: [listing.id],
+    }),
+  }),
+);

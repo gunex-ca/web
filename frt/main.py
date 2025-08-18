@@ -1,0 +1,206 @@
+from pathlib import Path
+import json
+from tqdm import tqdm
+import re
+from collections import defaultdict
+
+
+countries = {
+    "UNITED STATES OF AMERICA": "US",
+    "CANADA": "CA",
+    "UNITED KINGDOM": "UK",
+    "SPAIN": "ES",
+    "ITALY": "IT",
+    "HUNGARY": "HU",
+    "GERMANY": "DE",
+    "BELGIUM": "BE",
+    "CHINA": "CN",
+    "ISRAEL": "IL",
+    "TURKEY": "TR",
+    "JAPAN": "JP",
+    "BOSNIA-HERZEGOVINA": "BA",
+}
+
+KNOWN_LABELS = [
+    "Manufacturer",
+    "Model",
+    "Action",
+    "Legal Classification",
+    "Country of Manufacturer",
+    "Serial Numbering",
+]
+
+
+if __name__ == "__main__":
+
+    MAX_PAGES = 200_000
+
+    pdf_path = Path("./frt-0811.pdf").expanduser().resolve()
+
+    pages_file = Path("pages.json")
+    page_texts: list[str] | None = None
+
+    if pages_file.exists():
+        try:
+            with pages_file.open("r", encoding="utf-8") as f:
+                page_texts = json.load(f)
+            if not isinstance(page_texts, list):
+                page_texts = None
+            else:
+                print(f"Loaded {len(page_texts)} pages from {pages_file}")
+        except Exception:
+            page_texts = None
+
+    if page_texts is None or len(page_texts) < MAX_PAGES:
+        print(f"{pages_file} not found or invalid. Extracting from PDF…")
+        import pdfplumber
+        with pdfplumber.open(pdf_path) as pdf:
+            total_pages = len(pdf.pages)
+            target_count = min(MAX_PAGES, total_pages)
+            page_texts = []
+            for idx in tqdm(range(target_count), total=target_count, desc="Extracting", unit="page"):
+                text = pdf.pages[idx].extract_text()
+                page_texts.append(text if text is not None else "")
+        with pages_file.open("w", encoding="utf-8") as f:
+            json.dump(page_texts, f, ensure_ascii=False)
+        print(f"Saved {len(page_texts)} pages to {pages_file}")
+
+
+    frn_groups = defaultdict(list)
+
+    for idx, text in enumerate(page_texts):
+        match = re.search(r"Firearm Reference Number \(FRN\):\s*(\d+)", text)
+        if match:
+            frn_number = match.group(1)
+            frn_groups[frn_number].append((idx, text))
+            if frn_number == "128418":
+                print(text)
+        else:
+            frn_groups[None].append((idx, text))
+
+    def extract_value(text: str, label: str) -> str | None:
+        # Get only the remainder of the label's line
+        pattern = rf"^{re.escape(label)}\s*:\s*(.*)$"
+        match = re.search(pattern, text, flags=re.IGNORECASE | re.MULTILINE)
+        if match is None:
+            return None
+        remainder = match.group(1).strip()
+        if remainder == "":
+            return ""
+        # If the remainder appears to be the beginning of another known label
+        # (e.g., line-wrapped "Serial" for "Serial Numbering"), treat as empty
+        remainder_upper = remainder.upper()
+        for other_label in KNOWN_LABELS:
+            if other_label.lower() == label.lower():
+                continue
+            first_word = other_label.split()[0].upper()
+            if remainder_upper.startswith(first_word):
+                return ""
+        return remainder
+
+    def extract_calibres(table_text: str, frn: str | None) -> list[str]:
+        if frn is None:
+            return []
+        # Match lines like: "128418 - 2 9MM LUGER 32 143 Prohibited ..."
+        # Capture calibre between the sequence number and the first numeric field thereafter
+        pattern = rf"^\s*{re.escape(frn)}\s*-\s*\d+\s+(?P<calibre>.+?)\s+\d{{1,4}}(?:\s+\d{{1,4}})?\b"
+        matches = re.finditer(pattern, table_text, flags=re.MULTILINE)
+        calibres: list[str] = []
+        for m in matches:
+            calibre = m.group("calibre").strip()
+            # Clean typical trailing punctuation/artifacts
+            calibre = re.sub(r"\s{2,}", " ", calibre)
+            calibres.append(calibre)
+        # De-duplicate preserving order
+        seen = set()
+        unique_calibres: list[str] = []
+        for c in calibres:
+            if c not in seen:
+                seen.add(c)
+                unique_calibres.append(c)
+        return unique_calibres
+
+    def warn_if_missing(label: str, value) -> None:
+        is_missing = value is None or (isinstance(value, str) and value.strip() == "")
+        if is_missing:
+            print(f"\033[93mWARNING: Missing {label}\033[0m")
+
+    print("-" * 100)
+
+    guns = []
+
+    for frn, pages in frn_groups.items():
+        print(f"Processing: {frn}")
+        combined_text = "\n".join(page_text for _, page_text in pages)
+        manufacturer = extract_value(combined_text, "Manufacturer")
+        make = extract_value(combined_text, "Make")
+        model = extract_value(combined_text, "Model")
+        action = extract_value(combined_text, "Action")
+        legal_class = extract_value(combined_text, "Legal Classification")
+        country = extract_value(combined_text, "Country of Manufacturer")
+        normalized_country = country.upper() if country else ""
+        country_code = countries.get(normalized_country, "Unknown")
+        frn_type = extract_value(combined_text, "Type")
+
+        manufacturer = make or manufacturer
+
+        if country_code == "Unknown":
+            print(f"\033[93mWARNING: Unknown country code for '{country}'\033[0m")
+
+        header = f"FRN: {frn}" if frn is not None else "FRN not found"
+
+        warn_if_missing("FRN", frn)
+        warn_if_missing("Type", frn_type)
+        warn_if_missing("Manufacturer", manufacturer)
+        warn_if_missing("Model", model)
+        warn_if_missing("Action", action)
+        warn_if_missing("Legal Classification", legal_class)
+        warn_if_missing("Country of Manufacturer", country)
+
+        calibres = set()
+        for calibre in extract_calibres(combined_text, frn):
+            calibre = calibre.replace("N/A", "").strip()
+            calibre = calibre.split("/")
+            for c in calibre:
+                c = c.strip().replace(" X", "")
+                if c == "" or c == "GAS" or c == "BB" or c == "ARROW":
+                    continue
+                calibres.add(c)
+
+        gun = {
+            "frn": frn,
+            "type": frn_type,
+            "manufacturer": manufacturer,
+            "model": model,
+            "action": action,
+            "legal_class": legal_class,
+            "country_code": country_code,
+            "calibres": list(calibres),
+            "pages": [page_idx for page_idx, _ in pages],
+        }
+
+        if frn == None:
+            print(f"\033[93mWARNING: FRN is None\033[0m")
+            continue
+
+        guns.append(gun)
+
+    with open("guns.json", "w", encoding="utf-8") as f:
+        json.dump(guns, f, ensure_ascii=False, indent=2)
+
+    # Get all unique manufacturers from the generated guns list
+    manufacturers = sorted(set(gun["manufacturer"] for gun in guns if gun.get("manufacturer")))
+    
+    with open("manufacturers.json", "w", encoding="utf-8") as mf:
+        json.dump(manufacturers, mf, ensure_ascii=False, indent=2)
+
+    # Get all unique calibres from the generated guns list
+    calibres_set = set()
+    for gun in guns:
+        for calibre in gun.get("calibres", []):
+            calibres_set.add(calibre)
+    calibres = sorted(calibres_set)
+    with open("calibres.json", "w", encoding="utf-8") as cf:
+        json.dump(calibres, cf, ensure_ascii=False, indent=2)
+
+    print(f"Printed {len(page_texts)} pages")

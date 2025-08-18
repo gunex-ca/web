@@ -27,6 +27,11 @@ export const ImageUploader = () => {
         .filepond--root {
           border: 1px solid var(--input) !important;
           border-radius: 0.5rem !important;
+          background: color-mix(
+            in oklab,
+            var(--input) 30%,
+            transparent
+          ) !important;
         }
         .filepond-grid .filepond--item {
           width: calc(33% - 0.5em);
