@@ -1,5 +1,5 @@
-import { ImageCarousel } from "../../[listing]/_components/ImageCarousel";
-import { SellerSection } from "../../[listing]/_components/SellersSection";
+import { ImageCarousel } from "../../../../(search)/listings/[listing]/_components/ImageCarousel";
+import { SellerSection } from "../../../../(search)/listings/[listing]/_components/SellersSection";
 
 export const Preview = () => {
   const images = [

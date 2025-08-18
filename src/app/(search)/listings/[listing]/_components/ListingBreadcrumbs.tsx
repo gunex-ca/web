@@ -12,7 +12,7 @@ export const ListingBreadcrumbs: FC<{ category: string }> = ({ category }) => {
   const [categorySlug, subCategorySlug] = category.split(":");
   const categoryObj = CATEGORY[categorySlug ?? ""] ?? CATEGORY.firearms;
   const subCategory = categoryObj?.children.find(
-    (c) => c.slug === subCategorySlug
+    (c) => c.slug === subCategorySlug,
   );
   if (categoryObj == null || subCategory == null) return null;
   return (

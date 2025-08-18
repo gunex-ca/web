@@ -1,28 +1,34 @@
-import Link from "next/link";
-
 import { headers } from "next/headers";
+import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { auth } from "~/lib/auth";
+import { NavbarContainer } from "./NavbarClient";
 
-export default async function Navbar() {
+export default async function Navbar({
+  showBorder = false,
+}: {
+  showBorder?: boolean;
+}) {
   const session = await auth.api.getSession({ headers: await headers() });
-
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center gap-6">
-          <Link href="/" className="font-semibold">
-            Gunex
+    <NavbarContainer showBorder={showBorder}>
+      <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
+        <Link href="/" className="font-semibold">
+          Gunex
+        </Link>
+
+        <nav className="hidden items-center gap-8 text-muted-foreground text-sm md:flex">
+          <Link href="/" className="hover:text-foreground">
+            Home
           </Link>
-          <nav className="hidden items-center gap-4 text-muted-foreground text-sm md:flex">
-            <Link href="/" className="hover:text-foreground">
-              Home
-            </Link>
-            <Link href="/listings/new" className="hover:text-foreground">
-              Post a listing
-            </Link>
-          </nav>
-        </div>
+          <Link href="/faq" className="hover:text-foreground">
+            FAQ
+          </Link>
+          <Link href="/about" className="hover:text-foreground">
+            About
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-2">
           {session == null ? (
             <>
@@ -40,6 +46,6 @@ export default async function Navbar() {
           )}
         </div>
       </div>
-    </header>
+    </NavbarContainer>
   );
 }

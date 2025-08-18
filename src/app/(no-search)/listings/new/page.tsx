@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -7,9 +8,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { CreateListingForm } from "./_components/CreateListingForm";
 import { CATEGORY } from "~/lib/categories";
-import { notFound } from "next/navigation";
+import { CreateListingForm } from "./_components/CreateListingForm";
 import { Preview } from "./_components/Preview";
 
 export const metadata: Metadata = {
@@ -36,7 +36,7 @@ export default async function NewListingPage({
 
   const category = CATEGORY[categorySlug ?? ""] ?? CATEGORY.firearms;
   const subCategory = category?.children.find(
-    (c) => c.slug === subCategorySlug
+    (c) => c.slug === subCategorySlug,
   );
 
   if (category == null || subCategory == null) return notFound();

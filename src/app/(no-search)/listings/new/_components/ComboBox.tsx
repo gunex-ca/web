@@ -40,7 +40,7 @@ export const ComboBox: React.FC<{
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [popoverWidth, setPopoverWidth] = useState<number | undefined>(
-    undefined
+    undefined,
   );
 
   useLayoutEffect(() => {
@@ -104,7 +104,7 @@ export const ComboBox: React.FC<{
                   <CheckIcon
                     className={cn(
                       "mr-2 h-4 w-4",
-                      value === option.value ? "opacity-100" : "opacity-0"
+                      value === option.value ? "opacity-100" : "opacity-0",
                     )}
                   />
                   {option.label}

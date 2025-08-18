@@ -1,11 +1,21 @@
 import Link from "next/link";
-import { HydrateClient, api } from "~/trpc/server";
+import type { Metadata } from "next";
+import { Search } from "~/components/Serach";
+import { api } from "~/trpc/server";
+
+export const metadata: Metadata = {
+  title: "Gunex • Buy and sell firearms in Canada",
+  description:
+    "Discover and list firearms and accessories across Canada. Browse newest listings and connect with sellers.",
+  alternates: { canonical: "/" },
+};
 
 export default async function Home() {
   const listings = await api.listing.getNewest();
 
   return (
-    <HydrateClient>
+    <>
+      <Search />
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="py-8">
           <h1 className="font-semibold text-2xl">Newest listings</h1>
@@ -25,6 +35,6 @@ export default async function Home() {
           </div>
         </div>
       </div>
-    </HydrateClient>
+    </>
   );
 }

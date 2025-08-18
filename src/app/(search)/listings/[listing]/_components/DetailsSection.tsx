@@ -1,5 +1,5 @@
-import type { FC } from "react";
 import { capitalCase } from "change-case";
+import type { FC } from "react";
 
 export type ListingProperties = Record<string, string | number> & {
   manufacturer?: string;

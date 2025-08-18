@@ -182,7 +182,7 @@ export const categories: Category[] = [
 
 // Fast lookup by URL slug
 export const CATEGORY: Record<string, Category> = Object.fromEntries(
-  categories.map((cat) => [cat.slug, cat])
+  categories.map((cat) => [cat.slug, cat]),
 );
 
 export type { Category as ListingCategory, Subcategory as ListingSubcategory };

@@ -37,33 +37,76 @@ if __name__ == "__main__":
 
     pdf_path = Path("./frt-0811.pdf").expanduser().resolve()
 
-    pages_file = Path("pages.json")
-    page_texts: list[str] | None = None
+    CHUNK_SIZE = 10_000
+    
+    def load_existing_chunks() -> list[str]:
+        """Load all existing chunk files and return combined page texts."""
+        all_pages = []
+        chunk_num = 1
+        while True:
+            chunk_file = Path(f"guns-{chunk_num}.json")
+            if not chunk_file.exists():
+                break
+            try:
+                with chunk_file.open("r", encoding="utf-8") as f:
+                    chunk_data = json.load(f)
+                if isinstance(chunk_data, list):
+                    all_pages.extend(chunk_data)
+                    print(f"Loaded {len(chunk_data)} pages from {chunk_file}")
+                chunk_num += 1
+            except Exception:
+                print(f"Failed to load {chunk_file}")
+                break
+        return all_pages
 
-    if pages_file.exists():
-        try:
-            with pages_file.open("r", encoding="utf-8") as f:
-                page_texts = json.load(f)
-            if not isinstance(page_texts, list):
-                page_texts = None
-            else:
-                print(f"Loaded {len(page_texts)} pages from {pages_file}")
-        except Exception:
-            page_texts = None
+    def save_chunk(pages: list[str], chunk_num: int) -> None:
+        """Save a chunk of pages to a numbered file."""
+        chunk_file = Path(f"guns-{chunk_num}.json")
+        with chunk_file.open("w", encoding="utf-8") as f:
+            json.dump(pages, f, ensure_ascii=False)
+        print(f"Saved {len(pages)} pages to {chunk_file}")
 
-    if page_texts is None or len(page_texts) < MAX_PAGES:
-        print(f"{pages_file} not found or invalid. Extracting from PDF…")
+    existing_pages = load_existing_chunks()
+    total_existing = len(existing_pages)
+    
+    if total_existing < MAX_PAGES:
+        if existing_pages:
+            print(f"Have {total_existing} pages cached, need {MAX_PAGES}. Extracting more…")
+        else:
+            print(f"No cached pages found. Extracting from PDF…")
+        
         import pdfplumber
         with pdfplumber.open(pdf_path) as pdf:
             total_pages = len(pdf.pages)
             target_count = min(MAX_PAGES, total_pages)
-            page_texts = []
-            for idx in tqdm(range(target_count), total=target_count, desc="Extracting", unit="page"):
+            
+            # Start from where we left off
+            start_idx = total_existing
+            current_chunk = []
+            pages_processed = total_existing
+            
+            for idx in tqdm(range(start_idx, target_count), total=target_count-start_idx, desc="Extracting", unit="page"):
                 text = pdf.pages[idx].extract_text()
-                page_texts.append(text if text is not None else "")
-        with pages_file.open("w", encoding="utf-8") as f:
-            json.dump(page_texts, f, ensure_ascii=False)
-        print(f"Saved {len(page_texts)} pages to {pages_file}")
+                current_chunk.append(text if text is not None else "")
+                pages_processed += 1
+                
+                # Save chunk every CHUNK_SIZE pages
+                if len(current_chunk) == CHUNK_SIZE:
+                    chunk_num = pages_processed // CHUNK_SIZE
+                    save_chunk(current_chunk, chunk_num)
+                    current_chunk = []  # Clear chunk after saving
+            
+            # Save final partial chunk if needed
+            if current_chunk:
+                final_chunk_num = (pages_processed // CHUNK_SIZE) + 1
+                save_chunk(current_chunk, final_chunk_num)
+                
+        print(f"Extraction complete: {pages_processed} total pages")
+        # Reload all chunks for processing
+        page_texts = load_existing_chunks()
+    else:
+        print(f"Using existing {total_existing} pages from cache")
+        page_texts = existing_pages
 
 
     frn_groups = defaultdict(list)

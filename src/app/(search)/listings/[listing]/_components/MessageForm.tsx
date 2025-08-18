@@ -1,5 +1,5 @@
-import type { FC } from "react";
 import { Send } from "lucide-react";
+import type { FC } from "react";
 import { Button } from "~/components/ui/button";
 
 export const MessageForm: FC = () => (

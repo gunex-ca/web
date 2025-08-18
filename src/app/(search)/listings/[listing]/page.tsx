@@ -1,19 +1,19 @@
 import { capitalCase } from "change-case";
 import type { Metadata } from "next";
 import dynamic from "next/dynamic";
-import { ImageCarousel } from "~/app/listings/[listing]/_components/ImageCarousel";
-import { PhoneReveal } from "./_components/PhoneReveal";
-import { SellerSection } from "./_components/SellersSection";
-import { ListingBreadcrumbs } from "./_components/ListingBreadcrumbs";
-import { TitleSection } from "./_components/TitleSection";
-import { PriceSection } from "./_components/PriceSection";
-import { MetaRow } from "./_components/MetaRow";
-import { DetailsSection } from "./_components/DetailsSection";
+import { ImageCarousel } from "~/app/(search)/listings/[listing]/_components/ImageCarousel";
 import { DescriptionSection } from "./_components/DescriptionSection";
+import { DetailsSection } from "./_components/DetailsSection";
+import { ListingBreadcrumbs } from "./_components/ListingBreadcrumbs";
 import { MessageForm } from "./_components/MessageForm";
+import { MetaRow } from "./_components/MetaRow";
+import { PhoneReveal } from "./_components/PhoneReveal";
+import { PriceSection } from "./_components/PriceSection";
+import { SellerSection } from "./_components/SellersSection";
+import { TitleSection } from "./_components/TitleSection";
 
 const LocationMap = dynamic(() =>
-  import("./_components/LocationMap").then((mod) => mod.LocationMap)
+  import("./_components/LocationMap").then((mod) => mod.LocationMap),
 );
 
 type PageProps = {

@@ -1,14 +1,14 @@
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { ImageUploader } from "./ImageUploader";
 import {
   Select,
-  SelectTrigger,
   SelectContent,
   SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
+import { ImageUploader } from "./ImageUploader";
 
 type GeneralFormProps = {
   title: string;

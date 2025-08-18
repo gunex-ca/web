@@ -1,5 +1,5 @@
+import { useMemo, useState } from "react";
 import { Label } from "~/components/ui/label";
-import { ComboBox } from "./ComboBox";
 import {
   actions,
   calibers,
@@ -7,7 +7,7 @@ import {
   legalClasses,
   manufacturers,
 } from "~/lib/categories/gun-manufacturer";
-import { useMemo, useState } from "react";
+import { ComboBox } from "./ComboBox";
 
 type FirearmsRifleProperties = {
   manufacturer: string;
@@ -34,12 +34,12 @@ export const FirearmsRifleCreateForm: React.FC<{
 }> = ({ value, onChange }) => {
   const models = useMemo(
     () => guns.filter((g) => g.manufacturer === value.manufacturer),
-    [value.manufacturer]
+    [value.manufacturer],
   );
 
   const model = useMemo(
     () => models.find((m) => m.model === value.model),
-    [value.model, models]
+    [value.model, models],
   );
 
   return (

@@ -1,5 +1,10 @@
-import type { Metadata } from "next";
 import { SignInForm } from "./_components/SignInForm";
+
+export const metadata = {
+  title: "Sign in • Gunex",
+  description: "Sign in to your Gunex account.",
+  alternates: { canonical: "/sign-in" },
+} satisfies import("next").Metadata;
 
 export default function SignIn() {
   return (

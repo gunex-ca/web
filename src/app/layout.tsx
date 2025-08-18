@@ -5,7 +5,7 @@ import { Geist } from "next/font/google";
 
 import { ThemeProvider } from "next-themes";
 import { TRPCReactProvider } from "~/trpc/react";
-import Navbar from "./_components/Navbar";
+import { HydrateClient } from "~/trpc/server";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -32,8 +32,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <TRPCReactProvider>
-            <Navbar />
-            {children}
+            <HydrateClient>{children}</HydrateClient>
           </TRPCReactProvider>
         </ThemeProvider>
       </body>
