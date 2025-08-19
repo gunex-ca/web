@@ -12,7 +12,7 @@ import { auth } from "~/lib/auth";
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "~/server/db";
 import * as schema from "~/server/db/schema";
-import { LocationMap } from "../(search)/listings/[listing]/_components/LocationMap";
+import { LocationMapClient } from "../(search)/listings/[listing]/_components/LocationMapClient";
 import { EditMemberInfoForm, EditProfileForm } from "./_components/ProfileForm";
 
 export default async function ProfilePage() {
@@ -59,7 +59,10 @@ export default async function ProfilePage() {
         <CardContent className="grid grid-cols-2 gap-4">
           <EditMemberInfoForm user={user} />
           {postalCode?.latitude && postalCode.longitude && (
-            <LocationMap lat={postalCode.latitude} lng={postalCode.longitude} />
+            <LocationMapClient
+              lat={postalCode.latitude}
+              lng={postalCode.longitude}
+            />
           )}
         </CardContent>
       </Card>

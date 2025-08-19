@@ -1,10 +1,10 @@
-import { headers } from "next/headers";
-import { InfoForm } from "./_components/InfoForm";
-import { auth } from "~/lib/auth";
-import { notFound } from "next/navigation";
-import { db } from "~/server/db";
 import { eq } from "drizzle-orm";
+import { headers } from "next/headers";
+import { notFound } from "next/navigation";
+import { auth } from "~/lib/auth";
+import { db } from "~/server/db";
 import * as schema from "~/server/db/schema";
+import { InfoForm } from "./_components/InfoForm";
 
 export default async function Onboarding() {
   const session = await auth.api.getSession({ headers: await headers() });

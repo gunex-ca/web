@@ -45,7 +45,7 @@ const MemberInfoFormSchema = z.object({
       },
       {
         message: "Invalid postal code format (e.g., A1A 1A1)",
-      }
+      },
     ),
   showPartialPostalCode: z.boolean(),
 });

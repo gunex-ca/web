@@ -7,12 +7,12 @@ import { Required } from "~/components/Required";
 import { Button } from "~/components/ui/button";
 import {
   Form,
-  FormField,
-  FormLabel,
-  FormItem,
   FormControl,
-  FormMessage,
   FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
 } from "~/components/ui/form";
 import { Input } from "~/components/ui/input";
 import type { SelectUser } from "~/server/db/schema";
@@ -50,7 +50,7 @@ const formSchema = z.object({
       },
       {
         message: "Enter a valid Canadian postal code (e.g., K1A 0A9)",
-      }
+      },
     ),
 });
 
@@ -67,7 +67,7 @@ export const InfoForm: React.FC<{ user: SelectUser }> = ({ user }) => {
   const postalCode = form.watch("postalCode") ?? user.postalCode ?? "";
   const location = api.location.getPostalCode.useQuery(
     { postalCode: postalCode.replaceAll(" ", "").toUpperCase() },
-    { enabled: postalCode !== "" && postalCode.length === 7 }
+    { enabled: postalCode !== "" && postalCode.length === 7 },
   );
 
   function onSubmit(values: z.infer<typeof formSchema>) {
@@ -79,24 +79,12 @@ export const InfoForm: React.FC<{ user: SelectUser }> = ({ user }) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField
           control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Name</FormLabel>
-              <FormControl>
-                <Input {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Username</FormLabel>
+              <FormLabel>
+                Username <Required />
+              </FormLabel>
               <FormControl>
                 <Input {...field} />
               </FormControl>

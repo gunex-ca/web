@@ -2,8 +2,8 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { auth } from "~/lib/auth";
-import * as schema from "~/server/db/schema";
 import { db } from "~/server/db";
+import * as schema from "~/server/db/schema";
 
 export default async function FavouritesPage() {
   const session = await auth.api.getSession({

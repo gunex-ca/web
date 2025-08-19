@@ -38,7 +38,7 @@ export const listingExternalRelations = relations(
       fields: [listingExternal.listingId],
       references: [listing.id],
     }),
-  })
+  }),
 );
 
 export const reviewRelations = relations(review, ({ one }) => ({

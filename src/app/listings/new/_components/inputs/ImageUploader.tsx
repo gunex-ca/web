@@ -7,15 +7,24 @@ import FilePondPluginImageEditor from "@pqina/filepond-plugin-image-editor";
 import FilePondPluginImagePreview from "filepond-plugin-image-preview";
 
 import { FilePond, registerPlugin } from "react-filepond";
+import type { FilePondFile, FilePondInitialFile } from "filepond/types";
 
 registerPlugin(FilePondPluginImageEditor, FilePondPluginImagePreview);
 
-export const ImageUploader = () => {
+export const ImageUploader: React.FC<{
+  files?: FilePondInitialFile[];
+  onUpdate?: (files: FilePondFile[]) => void;
+}> = ({ files, onUpdate }) => {
   return (
     <div>
       <FilePond
         allowMultiple={true}
         maxFiles={9}
+        files={files}
+        onupdatefiles={(files) => {
+          onUpdate?.(files);
+          console.log(files);
+        }}
         acceptedFileTypes={["image/*"]}
         itemInsertLocation="after"
         imagePreviewHeight={120}

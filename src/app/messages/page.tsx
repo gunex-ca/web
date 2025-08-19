@@ -1,5 +1,14 @@
 "use client";
 
+import {
+  ExternalLinkIcon,
+  Flag,
+  List,
+  MoreVertical,
+  Shield,
+  User,
+} from "lucide-react";
+import Link from "next/link";
 import { useLayoutEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import {
@@ -10,15 +19,6 @@ import {
 } from "~/components/ui/dropdown-menu";
 import { Tabs, TabsList, TabsTrigger } from "~/components/ui/tabs";
 import { Textarea } from "~/components/ui/textarea";
-import {
-  ExternalLinkIcon,
-  Flag,
-  List,
-  MoreVertical,
-  Shield,
-  User,
-} from "lucide-react";
-import Link from "next/link";
 
 interface MessageBubbleProps {
   message: string;

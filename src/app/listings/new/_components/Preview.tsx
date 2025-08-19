@@ -1,17 +1,25 @@
 "use client";
 
 import { capitalCase } from "change-case";
+import dynamic from "next/dynamic";
 import { DescriptionSection } from "~/app/(search)/listings/[listing]/_components/DescriptionSection";
 import { DetailsSection } from "~/app/(search)/listings/[listing]/_components/DetailsSection";
 import { ImageCarousel } from "~/app/(search)/listings/[listing]/_components/ImageCarousel";
 import { ListingBreadcrumbs } from "~/app/(search)/listings/[listing]/_components/ListingBreadcrumbs";
-import { LocationMap } from "~/app/(search)/listings/[listing]/_components/LocationMap";
 import { MetaRow } from "~/app/(search)/listings/[listing]/_components/MetaRow";
 import { PriceSection } from "~/app/(search)/listings/[listing]/_components/PriceSection";
 import { SellerSection } from "~/app/(search)/listings/[listing]/_components/SellersSection";
 import { TitleSection } from "~/app/(search)/listings/[listing]/_components/TitleSection";
 import { CATEGORY } from "~/lib/categories";
 import { useListingForm } from "./ListingState";
+
+const LocationMap = dynamic(
+  () =>
+    import("~/app/(search)/listings/[listing]/_components/LocationMap").then(
+      (mod) => mod.LocationMap
+    ),
+  { ssr: false }
+);
 
 export const Preview: React.FC = () => {
   const { state } = useListingForm();

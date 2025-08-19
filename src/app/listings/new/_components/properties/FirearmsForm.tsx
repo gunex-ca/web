@@ -8,6 +8,7 @@ import {
   guns,
   legalClasses,
 } from "~/lib/categories/gun-manufacturer";
+import { Required } from "../../../../../components/Required";
 import { useListingForm } from "../ListingState";
 import { ComboBox } from "../inputs/ComboBox";
 import { ConditionInput } from "../inputs/ConditionInput";
@@ -15,7 +16,6 @@ import {
   FirearmsManufacturerInput,
   FirearmsManufacturerModelInput,
 } from "../inputs/FirearmsInputs";
-import { Required } from "../../../../../components/Required";
 import { useMount } from "./use-mount";
 
 type FirearmsFormProperties = {
@@ -49,12 +49,12 @@ export const FirearmsGunCreateForm: React.FC = () => {
 
   const models = useMemo(
     () => guns.filter((g) => g.manufacturer === state.properties.Manufacturer),
-    [state.properties.Manufacturer]
+    [state.properties.Manufacturer],
   );
 
   const model = useMemo(
     () => models.find((m) => m.model === state.properties.Model),
-    [state.properties.Model, models]
+    [state.properties.Model, models],
   );
 
   return (
