@@ -37,7 +37,7 @@ export const Search: React.FC = () => {
           <Link
             key={s}
             href={`/listings?q=${encodeURIComponent(s)}`}
-            className="text-muted-foreground hover:text-foreground hover:underline"
+            className="whitespace-nowrap text-muted-foreground hover:text-foreground hover:underline"
           >
             {s}
           </Link>

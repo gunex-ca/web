@@ -2,24 +2,41 @@
 
 import { Button } from "~/components/ui/button";
 
-import { FirearmsRifleCreateForm } from "./FirearmsForm";
+import { FirearmsGunCreateForm } from "./properties/FirearmsForm";
 import { GeneralForm } from "./GeneralForm";
+import { AmmoForm } from "./properties/LiveAmmoForm";
+import { BowForm } from "./properties/BowForm";
 
-export function CreateListingForm() {
+const categoryForms = {
+  "firearms-muzzleloaders": FirearmsGunCreateForm,
+  "firearms-shotguns": FirearmsGunCreateForm,
+  "firearms-handguns": FirearmsGunCreateForm,
+  "firearms-rifles": FirearmsGunCreateForm,
+  "ammunition-live-ammo": AmmoForm,
+  "ammunition-dummy-rounds": AmmoForm,
+  "archery-bows": BowForm,
+} as const;
+
+export const CreateListingForm: React.FC<{ subCategoryId: string }> = ({
+  subCategoryId,
+}) => {
+  const Form = categoryForms[subCategoryId];
+
   return (
-    <form className="space-y-6">
+    <div className="space-y-6">
       <section className="space-y-4">
         <h3 className="font-semibold text-lg">General</h3>
         <GeneralForm />
       </section>
 
-      <section className="space-y-4">
-        <h3 className="font-semibold text-lg">Category details</h3>
-
-        <FirearmsRifleCreateForm />
-      </section>
+      {Form && (
+        <section className="space-y-4">
+          <h3 className="font-semibold text-lg">Additional Details</h3>
+          <Form />
+        </section>
+      )}
 
       <Button type="submit">Create</Button>
-    </form>
+    </div>
   );
-}
+};

@@ -11,6 +11,7 @@ import { PriceSection } from "~/app/(search)/listings/[listing]/_components/Pric
 import { SellerSection } from "~/app/(search)/listings/[listing]/_components/SellersSection";
 import { TitleSection } from "~/app/(search)/listings/[listing]/_components/TitleSection";
 import { useListingForm } from "./ListingState";
+import { CATEGORY } from "~/lib/categories";
 
 export const Preview: React.FC = () => {
   const { state } = useListingForm();
@@ -46,6 +47,10 @@ export const Preview: React.FC = () => {
       sortOrder: 4,
     },
   ];
+
+  const subCategory = CATEGORY[state.subCategoryId];
+  if (subCategory == null || "children" in subCategory) return null;
+
   return (
     <div className="rounded-md border">
       <ImageCarousel
@@ -54,21 +59,11 @@ export const Preview: React.FC = () => {
       />
       <div className=" h-[calc(50vh-60px)] shrink-0 flex-col overflow-scroll">
         <div className="flex-grow space-y-4 overflow-y-scroll p-4 md:p-6">
-          <ListingBreadcrumbs categoryId={state.categoryId} />
-
+          <ListingBreadcrumbs subCategory={subCategory} />
           <TitleSection title={state.title || "Untitled"} />
-
           <PriceSection price={`$${state.price.toLocaleString()}`} />
-
           <MetaRow createdAt={new Date()} location={"Unknown"} />
-
-          <DetailsSection
-            properties={{
-              condition: capitalCase(state.condition),
-              ...state.properties,
-            }}
-          />
-
+          <DetailsSection properties={state.properties} />
           <DescriptionSection
             description={state.description || "No description"}
           />

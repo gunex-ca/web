@@ -115,6 +115,55 @@ MANUFACTURERS = {
     
 }
 
+ACTIONS = {
+    "Air,Spring or Gas": "Air, Spring or Gas",
+}
+
+def normalize_action(action: str) -> str:
+    return ACTIONS.get(action, action)
+
+def normalize_calibres(calibres: list[str], action: str) -> list[str]:
+    normalized = set()
+    cals = []
+    for calibre in calibres:
+        c = calibre.split("/")
+        for c in c:
+            cals.append(c)
+
+    for c in cals:
+        c = c.strip()
+        if not c:
+            continue
+
+        # if starts with <number> GA then just return NUMBER GA
+        m_ga = re.match(r'^(\d+)\s*GA\b', c, flags=re.IGNORECASE)
+        if m_ga and action == "Shotgun":
+            c = f"{m_ga.group(1)} GA"
+        if m_ga and action != "Shotgun":
+            continue
+
+        # Replace any number (with optional decimal) followed by "MM" (case-insensitive) at the end with "<number>mm"
+        c = re.sub(r'(\d+(?:\.\d+)?)[ ]*MM', lambda m: f"{m.group(1)}mm", c, flags=re.IGNORECASE)
+        # Remove "N/A" suffix (case-insensitive, with or without preceding space or dash)
+        c = re.sub(r'[\s\-]*N/A$', '', c, flags=re.IGNORECASE)
+        # Remove "GAS" suffix (case-insensitive, with or without preceding space or dash)
+        c = re.sub(r'[\s\-]*GAS$', '', c, flags=re.IGNORECASE)
+        # Remove "BB" suffix (case-insensitive, with or without preceding space or dash)
+        c = re.sub(r'[\s\-]*BB$', '', c, flags=re.IGNORECASE)
+        # Remove "ARROW" suffix (case-insensitive, with or without preceding space or dash)
+        c = re.sub(r'[\s\-]*ARROW$', '', c, flags=re.IGNORECASE)
+        # Remove "PERCUSSION" suffix (case-insensitive, with or without preceding space or dash)
+        c = re.sub(r'[\s\-]*PERCUSSION$', '', c, flags=re.IGNORECASE)
+        # Remove " X" suffix (case-insensitive, with or without preceding space or dash)
+        c = re.sub(r'[\s\-]* X$', '', c, flags=re.IGNORECASE)
+
+        c = c.strip()
+        if c != "":
+            normalized.add(c)
+        
+    return list(normalized)
+
+
 KNOWN_LABELS = [
     "Manufacturer",
     "Model",
@@ -315,16 +364,9 @@ if __name__ == "__main__":
         warn_if_missing("Legal Classification", legal_class)
         warn_if_missing("Country of Manufacturer", country)
 
-        calibres = set()
-        for calibre in extract_calibres(combined_text, frn):
-            calibre = calibre.replace("N/A", "").strip()
-            calibre = calibre.split("/")
-            for c in calibre:
-                c = c.strip().replace(" X", "")
-                if c == "" or c == "GAS" or c == "BB" or c == "ARROW":
-                    continue
-                calibres.add(c)
+        calibres = extract_calibres(combined_text, frn)
 
+        action = normalize_action(action)
         gun = {
             "frn": frn,
             "type": frn_type,
@@ -333,7 +375,7 @@ if __name__ == "__main__":
             "action": action,
             "legal_class": legal_class,
             "country_code": country_code,
-            "calibres": list(calibres),
+            "calibres": normalize_calibres(calibres, action),
             "pages": [page_idx for page_idx, _ in pages],
         }
 

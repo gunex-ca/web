@@ -6,17 +6,11 @@ import {
   BreadcrumbList,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { CATEGORY } from "~/lib/categories";
+import type { Subcategory } from "~/lib/categories";
 
-export const ListingBreadcrumbs: FC<{ categoryId: string }> = ({
-  categoryId,
+export const ListingBreadcrumbs: FC<{ subCategory: Subcategory }> = ({
+  subCategory,
 }) => {
-  const [categorySlug, subCategorySlug] = categoryId.split(":");
-  const categoryObj = CATEGORY[categorySlug ?? ""] ?? CATEGORY.firearms;
-  const subCategory = categoryObj?.children.find(
-    (c) => c.slug === subCategorySlug
-  );
-  if (categoryObj == null || subCategory == null) return null;
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -25,14 +19,16 @@ export const ListingBreadcrumbs: FC<{ categoryId: string }> = ({
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href="/listings">{categoryObj.name}</BreadcrumbLink>
+          <BreadcrumbLink href="/listings">
+            {subCategory.parent.name}
+          </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbLink
-            href={`/listings/${categoryObj.slug}/${subCategorySlug}`}
+            href={`/listings/${subCategory.parent.id}/${subCategory.id}`}
           >
-            {subCategory?.name}
+            {subCategory.name}
           </BreadcrumbLink>
         </BreadcrumbItem>
       </BreadcrumbList>

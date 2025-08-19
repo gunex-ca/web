@@ -13,7 +13,7 @@ import { SellerSection } from "./_components/SellersSection";
 import { TitleSection } from "./_components/TitleSection";
 
 const LocationMap = dynamic(() =>
-  import("./_components/LocationMap").then((mod) => mod.LocationMap),
+  import("./_components/LocationMap").then((mod) => mod.LocationMap)
 );
 
 type PageProps = {
@@ -42,7 +42,7 @@ export default function ListingPage({ params: _params }: PageProps) {
     city: "Toronto",
     province: "ON",
     category: "firearms:rifles",
-    condition: "excellent",
+    condition: "Excellent",
     sellerId: "00000000-0000-0000-0000-000000000000",
     createdAt: new Date("2025-01-01"),
     seller: {
@@ -111,7 +111,7 @@ export default function ListingPage({ params: _params }: PageProps) {
           />
           <div className="flex h-[calc(90vh-60px)] min-h-0 w-[450px] shrink-0 flex-col overflow-hidden">
             <div className="flex-grow space-y-4 overflow-y-scroll p-4 md:p-6">
-              <ListingBreadcrumbs categoryId={listing.category} />
+              {/* <ListingBreadcrumbs subCategory={listing.subCategory} /> */}
 
               <TitleSection title={listing.title} />
 

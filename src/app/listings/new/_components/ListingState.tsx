@@ -3,30 +3,30 @@
 import type React from "react";
 import { createContext, useContext, useState } from "react";
 
-type ListingFormState = {
+type BaseProperties = Record<string, string | number>;
+
+type ListingFormState<T extends BaseProperties = BaseProperties> = {
   title: string;
   description: string;
   price: number;
-  condition: string;
-  categoryId: string;
-  subCategory: string;
-  properties: Record<string, string | number>;
+  subCategoryId: string;
+  properties: T;
   images: { id: string; url: string; alt?: string; sortOrder: number }[];
 };
 
 type ListingFormContextType = {
-  state: ListingFormState;
-  setState: React.Dispatch<React.SetStateAction<ListingFormState>>;
-  update: (fields: Partial<ListingFormState>) => void;
+  state: ListingFormState<BaseProperties>;
+  setState: React.Dispatch<
+    React.SetStateAction<ListingFormState<BaseProperties>>
+  >;
+  update: (fields: Partial<ListingFormState<BaseProperties>>) => void;
 };
 
 const defaultState: ListingFormState = {
   title: "",
   description: "",
   price: 0,
-  condition: "",
-  categoryId: "",
-  subCategory: "",
+  subCategoryId: "",
   properties: {},
   images: [],
 };
@@ -37,14 +37,14 @@ const ListingFormContext = createContext<ListingFormContextType | undefined>(
 
 export const ListingFormProvider: React.FC<{
   children: React.ReactNode;
-  categoryId: string;
-}> = ({ children, categoryId }) => {
-  const [state, setState] = useState<ListingFormState>({
+  subCategoryId: string;
+}> = ({ children, subCategoryId }) => {
+  const [state, setState] = useState<ListingFormState<BaseProperties>>({
     ...defaultState,
-    categoryId,
+    subCategoryId,
   });
 
-  const update = (fields: Partial<ListingFormState>) => {
+  const update = (fields: Partial<ListingFormState<BaseProperties>>) => {
     setState((prev) => ({
       ...prev,
       ...fields,
@@ -59,10 +59,16 @@ export const ListingFormProvider: React.FC<{
   );
 };
 
-export const useListingForm = () => {
+export const useListingForm = <T extends BaseProperties = BaseProperties>() => {
   const ctx = useContext(ListingFormContext);
-  if (!ctx) {
+  if (!ctx)
     throw new Error("useListingForm must be used within a ListingFormProvider");
-  }
-  return ctx;
+
+  return {
+    ...ctx,
+    state: ctx.state as ListingFormState<T>,
+    update: (fields: Partial<ListingFormState<T>>) => {
+      ctx.update(fields as Partial<ListingFormState<BaseProperties>>);
+    },
+  };
 };

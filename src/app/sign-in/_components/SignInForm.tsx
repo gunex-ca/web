@@ -18,7 +18,11 @@ export function SignInForm() {
     setError(null);
     setIsSubmitting(true);
     try {
-      await authClient.signIn.email({ email, password });
+      const result = await authClient.signIn.email({ email, password });
+      if (result.error) {
+        setError(result.error.statusText);
+        return;
+      }
       router.push("/");
       router.refresh();
     } catch (err) {

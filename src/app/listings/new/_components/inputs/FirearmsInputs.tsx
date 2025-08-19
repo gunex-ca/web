@@ -26,11 +26,10 @@ export const FirearmsManufacturerInput: React.FC<{
   return (
     <AsyncComboBox
       isLoading={isLoading}
-      placeholder="Select a manufacturer"
       value={value}
       onChange={onChange}
       options={[
-        { label: "(Other)", value: "other" },
+        { label: "(Other)", value: "Other" },
         ...(manufacturers?.map((manufacturer) => ({
           label: manufacturer.manufacturer,
           value: manufacturer.manufacturer,
@@ -73,12 +72,11 @@ export const FirearmsManufacturerModelInput: React.FC<{
   return (
     <AsyncComboBox
       isLoading={isLoading}
-      disabled={manufacturer === ""}
-      placeholder="Select a make"
+      disabled={manufacturer === "" || value === "Other"}
       value={value}
       onChange={onChange}
       options={[
-        { label: "(Other)", value: "other" },
+        { label: "(Other)", value: "Other" },
         ...(models?.map((model) => ({
           label: model,
           value: model,

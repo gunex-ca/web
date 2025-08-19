@@ -3,6 +3,11 @@ import Link from "next/link";
 import { Button } from "~/components/ui/button";
 import { auth } from "~/lib/auth";
 import { NavbarContainer } from "./NavbarClient";
+import { Favicon } from "./Favicon";
+import { Nunito } from "next/font/google";
+import { cn } from "~/components/utils";
+
+const nunito = Nunito({ subsets: ["latin"] });
 
 export default async function Navbar({
   showBorder = false,
@@ -13,13 +18,18 @@ export default async function Navbar({
   return (
     <NavbarContainer showBorder={showBorder}>
       <div className="mx-auto flex h-14 w-full max-w-7xl items-center justify-between px-4">
-        <Link href="/" className="font-semibold">
-          Gunex
+        <Link href="/" className="flex items-center gap-2 font-bold">
+          <Favicon className="size-6 fill-black dark:fill-white" />
+          <span
+            className={cn("mt-0.5 text-xl tracking-wide", nunito.className)}
+          >
+            GunEx
+          </span>
         </Link>
 
         <nav className="hidden items-center gap-8 text-muted-foreground text-sm md:flex">
           <Link href="/" className="hover:text-foreground">
-            Home
+            Categories
           </Link>
           <Link href="/faq" className="hover:text-foreground">
             FAQ

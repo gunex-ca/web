@@ -8,7 +8,7 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { ImageUploader } from "./ImageUploader";
+import { ImageUploader } from "./inputs/ImageUploader";
 import { useListingForm } from "./ListingState";
 
 export const GeneralForm: React.FC = () => {
@@ -27,33 +27,12 @@ export const GeneralForm: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label>Condition</Label>
-          <Select
-            value={state.condition}
-            onValueChange={(value) => update({ condition: value })}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="new">New</SelectItem>
-              <SelectItem value="excellent">Excellent</SelectItem>
-              <SelectItem value="good">Good</SelectItem>
-              <SelectItem value="fair">Fair</SelectItem>
-              <SelectItem value="poor">Poor</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-2">
-          <Label>Price</Label>
-          <Input
-            value={Number(state.price)}
-            onChange={(e) => update({ price: e.target.valueAsNumber })}
-          />
-        </div>
+      <div className="space-y-2">
+        <Label>Price</Label>
+        <Input
+          value={Number(state.price)}
+          onChange={(e) => update({ price: e.target.valueAsNumber })}
+        />
       </div>
 
       <div className="space-y-2">

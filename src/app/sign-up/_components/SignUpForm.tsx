@@ -18,7 +18,15 @@ export function SignUpForm() {
     setError(null);
     setIsSubmitting(true);
     try {
-      await authClient.signUp.email({ email, password, name: "" });
+      const result = await authClient.signUp.email({
+        email,
+        password,
+        name: "",
+      });
+      if (result.error) {
+        setError(result.error.message ?? result.error.statusText);
+        return;
+      }
       router.push("/");
       router.refresh();
     } catch (err) {
