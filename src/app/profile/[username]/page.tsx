@@ -33,14 +33,14 @@ export default async function ProfilePage({
   const activeListings = await db.query.listing.findMany({
     where: and(
       eq(schema.listing.sellerId, user.id),
-      eq(schema.listing.status, "active")
+      eq(schema.listing.status, "active"),
     ),
   });
 
   const soldListings = await db.query.listing.findMany({
     where: and(
       eq(schema.listing.sellerId, user.id),
-      eq(schema.listing.status, "sold")
+      eq(schema.listing.status, "sold"),
     ),
     limit: 50,
   });
@@ -57,7 +57,7 @@ export default async function ProfilePage({
               "-mb-px relative inline-flex items-center border-b-2 px-4 py-3 font-medium text-sm transition-all duration-200 hover:text-foreground",
               tab === "active"
                 ? "border-primary font-semibold text-primary"
-                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
             )}
           >
             <span className="whitespace-nowrap">
@@ -71,7 +71,7 @@ export default async function ProfilePage({
               "-mb-px relative inline-flex items-center border-b-2 px-4 py-3 font-medium text-sm transition-all duration-200 hover:text-foreground",
               tab === "sold"
                 ? "border-primary font-semibold text-primary"
-                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"
+                : "border-transparent text-muted-foreground hover:border-border hover:text-foreground",
             )}
           >
             <span className="whitespace-nowrap">Sold</span>

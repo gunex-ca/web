@@ -45,7 +45,7 @@ const MemberInfoFormSchema = z.object({
       },
       {
         message: "Invalid postal code format (e.g., A1A 1A1)",
-      },
+      }
     ),
   showPartialPostalCode: z.boolean(),
 });
@@ -133,14 +133,10 @@ export const EditProfileForm: React.FC<{ user: SelectUser }> = ({ user }) => {
 
         <Button
           type="submit"
-          disabled={form.formState.isSubmitting || !form.formState.isDirty}
+          disabled={form.formState.isSubmitting}
           className="mt-2"
         >
-          {form.formState.isSubmitting
-            ? "Saving..."
-            : !form.formState.isDirty
-              ? "No changes"
-              : "Save Changes"}
+          {form.formState.isSubmitting ? "Saving..." : "Save Changes"}
         </Button>
       </form>
     </Form>

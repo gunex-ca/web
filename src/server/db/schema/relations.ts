@@ -1,6 +1,6 @@
 import { relations } from "drizzle-orm";
 import { account, user } from "./auth";
-import { listing, listingExternal, listingImage } from "./listing";
+import { favorite, listing, listingExternal, listingImage } from "./listing";
 import { review } from "./review";
 
 export const userRelations = relations(user, ({ many }) => ({
@@ -38,10 +38,18 @@ export const listingExternalRelations = relations(
       fields: [listingExternal.listingId],
       references: [listing.id],
     }),
-  }),
+  })
 );
 
 export const reviewRelations = relations(review, ({ one }) => ({
   reviewer: one(user, { fields: [review.reviewerId], references: [user.id] }),
   reviewee: one(user, { fields: [review.revieweeId], references: [user.id] }),
+}));
+
+export const favoriteRelations = relations(favorite, ({ one }) => ({
+  user: one(user, { fields: [favorite.userId], references: [user.id] }),
+  listing: one(listing, {
+    fields: [favorite.listingId],
+    references: [listing.id],
+  }),
 }));

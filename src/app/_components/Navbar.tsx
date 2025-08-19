@@ -8,6 +8,7 @@ import { Favicon } from "./Favicon";
 import { NavbarContainer } from "./NavbarClient";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { ProfileDropdown } from "./ProfileDropdown";
+import { ThemeToggle } from "./ThemeToggle";
 
 const nunito = Nunito({ subsets: ["latin"] });
 
@@ -46,6 +47,7 @@ export default async function Navbar({
 
         {session == null ? (
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Button asChild variant="ghost" size="sm">
               <Link href="/sign-in">Sign in</Link>
             </Button>
@@ -58,6 +60,7 @@ export default async function Navbar({
             <Button asChild size="sm">
               <Link href="/listings/new">Post</Link>
             </Button>
+            <ThemeToggle />
             <NotificationsDropdown notificationCount={3} />
             <ProfileDropdown session={session} />
           </div>

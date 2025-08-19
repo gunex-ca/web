@@ -31,7 +31,7 @@ export const StarRating: FC<StarRatingProps> = ({
             const starIndex = index + 1;
             const fillAmount = Math.max(
               0,
-              Math.min(1, rating - (starIndex - 1))
+              Math.min(1, rating - (starIndex - 1)),
             );
             const width = `${Math.round(fillAmount * 100)}%`;
             return (
