@@ -60,18 +60,6 @@ export const listingRouter = createTRPCRouter({
       if (!draft.category) errors.push("Category is required");
       if (!draft.price || Number(draft.price) <= 0)
         errors.push("Price must be greater than 0");
-      if (!draft.province) errors.push("Province is required");
-      if (!draft.city || draft.city.trim().length < 2)
-        errors.push("City is required");
-
-      if (draft.category === "firearm") {
-        if (!draft.firearmType)
-          errors.push("Firearm type is required for firearm listings");
-        if (!draft.firearmClass)
-          errors.push("Firearm class is required for firearm listings");
-        if (!draft.images || draft.images.length < 1)
-          errors.push("At least one image is required for firearm listings");
-      }
 
       if (errors.length) {
         throw new TRPCError({

@@ -1,7 +1,7 @@
 import { Label } from "~/components/ui/label";
-import { ComboBox } from "../inputs/ComboBox";
-import { useListingForm } from "../ListingState";
 import { calibers } from "~/lib/categories/gun-manufacturer";
+import { useListingForm } from "../ListingState";
+import { ComboBox } from "../inputs/ComboBox";
 import { useMount } from "./use-mount";
 
 type AmmoFormProperties = {

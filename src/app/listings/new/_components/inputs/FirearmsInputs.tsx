@@ -66,7 +66,7 @@ export const FirearmsManufacturerModelInput: React.FC<{
         manufacturer,
         q: debouncedSearch,
       },
-      { enabled: manufacturer !== "" }
+      { enabled: manufacturer !== "" },
     );
 
   return (

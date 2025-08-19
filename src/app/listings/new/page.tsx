@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   Breadcrumb,
@@ -8,11 +9,10 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import { categories, CATEGORY, type Category } from "~/lib/categories";
+import { CATEGORY, type Category, categories } from "~/lib/categories";
 import { CreateListingForm } from "./_components/CreateListingForm";
 import { ListingFormProvider } from "./_components/ListingState";
 import { Preview } from "./_components/Preview";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "New listing • Gunex",

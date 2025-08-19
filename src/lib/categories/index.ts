@@ -17,7 +17,7 @@ type CategoryInput = {
 
 function makeCategory(
   input: CategoryInput,
-  subcategories: CategoryInput[]
+  subcategories: CategoryInput[],
 ): Category {
   const id = input.id;
   const category = { id, name: input.name };
@@ -84,7 +84,7 @@ export const categories: Category[] = [
         name: "Miscellaneous",
         id: "firearm-components-accessories-tools-miscellaneous",
       },
-    ]
+    ],
   ),
   makeCategory({ name: "Shooting & Range Gear", id: "shooting-range-gear" }, [
     { name: "Holsters", id: "shooting-range-gear-holsters" },
@@ -170,7 +170,7 @@ export const categories: Category[] = [
       { name: "Cleaning", id: "muzzleloading-cleaning" },
       { name: "Accessories", id: "muzzleloading-accessories" },
       { name: "Miscellaneous", id: "muzzleloading-miscellaneous" },
-    ]
+    ],
   ),
   makeCategory({ name: "Targets", id: "targets" }, [
     { name: "Paper Targets", id: "targets-paper-targets" },
@@ -246,7 +246,7 @@ export const CATEGORY: Record<string, Category | Subcategory> =
   Object.fromEntries([
     ...categories.map((cat) => [cat.id, cat]),
     ...categories.flatMap((cat) =>
-      cat.children.map((child) => [child.id, child])
+      cat.children.map((child) => [child.id, child]),
     ),
   ]);
 

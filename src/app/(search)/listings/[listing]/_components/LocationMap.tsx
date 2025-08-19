@@ -4,7 +4,7 @@ import { Circle, MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import type { FC } from "react";
 
-const RADIUS_METERS = 5000; // 5km
+const RADIUS_METERS = 10_000; // 10km
 
 export const LocationMap: FC<{ lat: number; lng: number }> = ({ lat, lng }) => {
   if (typeof window === "undefined") return null;
@@ -14,7 +14,7 @@ export const LocationMap: FC<{ lat: number; lng: number }> = ({ lat, lng }) => {
         attributionControl={false}
         className="h-full w-full"
         center={[lat, lng]}
-        zoom={9}
+        zoom={7}
         style={{ height: "100%", width: "100%" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

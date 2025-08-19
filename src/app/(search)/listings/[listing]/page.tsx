@@ -13,7 +13,7 @@ import { SellerSection } from "./_components/SellersSection";
 import { TitleSection } from "./_components/TitleSection";
 
 const LocationMap = dynamic(() =>
-  import("./_components/LocationMap").then((mod) => mod.LocationMap)
+  import("./_components/LocationMap").then((mod) => mod.LocationMap),
 );
 
 type PageProps = {

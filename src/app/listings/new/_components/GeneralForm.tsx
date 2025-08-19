@@ -8,8 +8,8 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 import { Textarea } from "~/components/ui/textarea";
-import { ImageUploader } from "./inputs/ImageUploader";
 import { useListingForm } from "./ListingState";
+import { ImageUploader } from "./inputs/ImageUploader";
 
 export const GeneralForm: React.FC = () => {
   const { state, update } = useListingForm();

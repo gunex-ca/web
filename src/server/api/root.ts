@@ -1,4 +1,6 @@
 import { listingRouter } from "~/server/api/routers/listings";
+import { locationRouter } from "~/server/api/routers/location";
+import { userRouter } from "~/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
 import { searchRouter } from "./routers/search";
 
@@ -10,6 +12,8 @@ import { searchRouter } from "./routers/search";
 export const appRouter = createTRPCRouter({
   listing: listingRouter,
   search: searchRouter,
+  user: userRouter,
+  location: locationRouter,
 });
 
 // export type definition of API

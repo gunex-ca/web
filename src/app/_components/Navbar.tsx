@@ -1,11 +1,13 @@
+import { Nunito } from "next/font/google";
 import { headers } from "next/headers";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
-import { auth } from "~/lib/auth";
-import { NavbarContainer } from "./NavbarClient";
-import { Favicon } from "./Favicon";
-import { Nunito } from "next/font/google";
 import { cn } from "~/components/utils";
+import { auth } from "~/lib/auth";
+import { Favicon } from "./Favicon";
+import { NavbarContainer } from "./NavbarClient";
+import { NotificationsDropdown } from "./NotificationsDropdown";
+import { ProfileDropdown } from "./ProfileDropdown";
 
 const nunito = Nunito({ subsets: ["latin"] });
 
@@ -42,22 +44,24 @@ export default async function Navbar({
           </Link>
         </nav>
 
-        <div className="flex items-center gap-2">
-          {session == null ? (
-            <>
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/sign-in">Sign in</Link>
-              </Button>
-              <Button asChild size="sm">
-                <Link href="/sign-up">Sign up</Link>
-              </Button>
-            </>
-          ) : (
+        {session == null ? (
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/sign-in">Sign in</Link>
+            </Button>
+            <Button asChild size="sm">
+              <Link href="/sign-up">Sign up</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
             <Button asChild size="sm">
               <Link href="/listings/new">Post</Link>
             </Button>
-          )}
-        </div>
+            <NotificationsDropdown notificationCount={3} />
+            <ProfileDropdown session={session} />
+          </div>
+        )}
       </div>
     </NavbarContainer>
   );

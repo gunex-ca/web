@@ -32,7 +32,7 @@ const defaultState: ListingFormState = {
 };
 
 const ListingFormContext = createContext<ListingFormContextType | undefined>(
-  undefined
+  undefined,
 );
 
 export const ListingFormProvider: React.FC<{

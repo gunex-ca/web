@@ -2,10 +2,10 @@
 
 import { Button } from "~/components/ui/button";
 
-import { FirearmsGunCreateForm } from "./properties/FirearmsForm";
 import { GeneralForm } from "./GeneralForm";
-import { AmmoForm } from "./properties/LiveAmmoForm";
 import { BowForm } from "./properties/BowForm";
+import { FirearmsGunCreateForm } from "./properties/FirearmsForm";
+import { AmmoForm } from "./properties/LiveAmmoForm";
 
 const categoryForms = {
   "firearms-muzzleloaders": FirearmsGunCreateForm,

@@ -1,22 +1,22 @@
 import { useMemo } from "react";
+import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
   actions,
   calibers,
   guns,
   legalClasses,
 } from "~/lib/categories/gun-manufacturer";
+import { useListingForm } from "../ListingState";
 import { ComboBox } from "../inputs/ComboBox";
+import { ConditionInput } from "../inputs/ConditionInput";
 import {
   FirearmsManufacturerInput,
   FirearmsManufacturerModelInput,
 } from "../inputs/FirearmsInputs";
-import { useListingForm } from "../ListingState";
-import { Input } from "~/components/ui/input";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { ConditionInput } from "../inputs/ConditionInput";
-import { useMount } from "./use-mount";
 import { Required } from "./Required";
+import { useMount } from "./use-mount";
 
 type FirearmsFormProperties = {
   Condition: string;
@@ -49,12 +49,12 @@ export const FirearmsGunCreateForm: React.FC = () => {
 
   const models = useMemo(
     () => guns.filter((g) => g.manufacturer === state.properties.Manufacturer),
-    [state.properties.Manufacturer]
+    [state.properties.Manufacturer],
   );
 
   const model = useMemo(
     () => models.find((m) => m.model === state.properties.Model),
-    [state.properties.Model, models]
+    [state.properties.Model, models],
   );
 
   return (

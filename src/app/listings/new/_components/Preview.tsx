@@ -10,8 +10,8 @@ import { MetaRow } from "~/app/(search)/listings/[listing]/_components/MetaRow";
 import { PriceSection } from "~/app/(search)/listings/[listing]/_components/PriceSection";
 import { SellerSection } from "~/app/(search)/listings/[listing]/_components/SellersSection";
 import { TitleSection } from "~/app/(search)/listings/[listing]/_components/TitleSection";
-import { useListingForm } from "./ListingState";
 import { CATEGORY } from "~/lib/categories";
+import { useListingForm } from "./ListingState";
 
 export const Preview: React.FC = () => {
   const { state } = useListingForm();

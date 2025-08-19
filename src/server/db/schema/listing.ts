@@ -1,8 +1,4 @@
-import {
-  type InferInsertModel,
-  type InferSelectModel,
-  relations,
-} from "drizzle-orm";
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -49,14 +45,6 @@ export const firearmClassEnum = pgEnum("firearm_class", [
   "prohibited",
 ]);
 
-export const conditionEnum = pgEnum("condition", [
-  "new",
-  "excellent",
-  "good",
-  "fair",
-  "poor",
-]);
-
 export const listingStatusEnum = pgEnum("listing_status", [
   "draft",
   "active",
@@ -87,23 +75,6 @@ export const userStatusEnum = pgEnum("user_status", [
   "deleted",
 ]);
 
-export const provinceEnum = pgEnum("province", [
-  // Provinces and territories
-  "AB",
-  "BC",
-  "MB",
-  "NB",
-  "NL",
-  "NS",
-  "NT",
-  "NU",
-  "ON",
-  "PE",
-  "QC",
-  "SK",
-  "YT",
-]);
-
 // Minimal demo table to keep existing TRPC router working
 export const posts = pgTable("post", (t) => ({
   id: t.uuid("id").primaryKey().defaultRandom().notNull(),
@@ -131,13 +102,6 @@ export const listing = pgTable(
     // Pricing
     price: numeric("price", { precision: 10, scale: 2 }),
 
-    // Item meta
-    condition: conditionEnum("condition"),
-
-    // Location
-    province: provinceEnum("province"),
-    city: varchar("city", { length: 120 }),
-
     // Category-specific properties (caliber, action, brand, etc.)
     properties: jsonb("properties"),
 
@@ -153,10 +117,9 @@ export const listing = pgTable(
     index("listings_seller_id_idx").on(table.sellerId),
     index("listings_category_idx").on(table.category),
     index("listings_status_idx").on(table.status),
-    index("listings_province_idx").on(table.province),
     index("listings_price_idx").on(table.price),
     uniqueIndex("listings_public_id_uk").on(table.publicId),
-  ]
+  ],
 );
 
 export type ListingInsert = InferInsertModel<typeof listing>;
@@ -183,7 +146,7 @@ export const listingView = pgTable(
   (table) => [
     index("listing_view_listing_id_idx").on(table.listingId),
     index("listing_view_viewer_id_idx").on(table.viewerId),
-  ]
+  ],
 );
 
 // Listing images
@@ -199,7 +162,7 @@ export const listingImage = pgTable(
     sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("listing_images_listing_id_idx").on(table.listingId)]
+  (table) => [index("listing_images_listing_id_idx").on(table.listingId)],
 );
 
 // Cross-post/external references
@@ -225,9 +188,9 @@ export const listingExternal = pgTable(
     index("listing_external_platform_idx").on(table.platform),
     uniqueIndex("listing_external_platform_external_id_uk").on(
       table.platform,
-      table.externalId
+      table.externalId,
     ),
-  ]
+  ],
 );
 
 // Favorites (wishlists)
@@ -245,7 +208,7 @@ export const favorite = pgTable(
   },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
-  ]
+  ],
 );
 
 // Messages (simple listing-based messaging)
@@ -270,7 +233,7 @@ export const message = pgTable(
     index("messages_listing_id_idx").on(table.listingId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_receiver_id_idx").on(table.receiverId),
-  ]
+  ],
 );
 
 export const listingReport = pgTable(
@@ -289,27 +252,5 @@ export const listingReport = pgTable(
     reason: text("reason").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("reports_reporter_id_idx").on(table.reporterId)]
-);
-
-export const listingRelations = relations(listing, ({ many }) => ({
-  images: many(listingImage),
-  externals: many(listingExternal),
-}));
-
-export const listingImageRelations = relations(listingImage, ({ one }) => ({
-  listing: one(listing, {
-    fields: [listingImage.listingId],
-    references: [listing.id],
-  }),
-}));
-
-export const listingExternalRelations = relations(
-  listingExternal,
-  ({ one }) => ({
-    listing: one(listing, {
-      fields: [listingExternal.listingId],
-      references: [listing.id],
-    }),
-  })
+  (table) => [index("reports_reporter_id_idx").on(table.reporterId)],
 );

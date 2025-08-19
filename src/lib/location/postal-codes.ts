@@ -11,14 +11,17 @@ export type PostalCodeEntry = {
   longitude: number | null;
 };
 
-const DATA_FILE = path.join(__dirname, "CA_full.txt");
+const DATA_FILE = path.join(process.cwd(), "CA_full.txt");
 
 function parseLine(line: string): PostalCodeEntry | null {
   // CA\tT0A 0A0\tAbee\tAlberta\tAB\t\t\t\t54.1958\t-113.1506\t6
   const parts = line.split("\t");
   if (parts.length < 11) return null;
-  const [country, postalCode, city, province, provinceCode, , , , lat, lon] =
-    parts;
+  const [country, postalCode, city, province, provinceCode] = parts;
+
+  const lat = parts[9];
+  const lon = parts[10];
+
   return {
     country: country ?? "",
     postalCode: postalCode ?? "",
@@ -30,7 +33,7 @@ function parseLine(line: string): PostalCodeEntry | null {
   };
 }
 
-export function getAllPostalCodes(): PostalCodeEntry[] {
+function getAllPostalCodes(): PostalCodeEntry[] {
   const file = fs.readFileSync(DATA_FILE, "utf8");
   const lines = file.split("\n").filter(Boolean);
   return lines
@@ -90,8 +93,9 @@ export function getAllCities(): City[] {
     .filter((city) => city.name && city.province && city.provinceCode);
 }
 
+const all = getAllPostalCodes();
+
 export function findPostalCode(code: string): PostalCodeEntry | undefined {
-  const all = getAllPostalCodes();
   // Normalize: remove spaces, uppercase
   const norm = code.replace(/\s+/g, "").toUpperCase();
   return all.find(
