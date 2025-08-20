@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Search } from "~/components/Serach";
+import { ListingSearchInput } from "~/components/ListingSerachInput";
 import Navbar from "../_components/Navbar";
 
 export default function RootLayout({
@@ -8,7 +8,7 @@ export default function RootLayout({
   return (
     <>
       <Navbar />
-      <Search />
+      <ListingSearchInput />
       {children}
     </>
   );

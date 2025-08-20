@@ -19,32 +19,6 @@ import { user } from "./auth";
 
 const listingId = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 12);
 
-// Enums
-export const categoryEnum = pgEnum("category", [
-  "firearm",
-  "ammunition",
-  "accessory",
-  "parts",
-  "optics",
-  "apparel",
-  "service",
-]);
-
-export const firearmTypeEnum = pgEnum("firearm_type", [
-  "rifle",
-  "shotgun",
-  "handgun",
-  "carbine",
-  "other",
-]);
-
-export const firearmClassEnum = pgEnum("firearm_class", [
-  // Canadian classifications
-  "non_restricted",
-  "restricted",
-  "prohibited",
-]);
-
 export const listingStatusEnum = pgEnum("listing_status", [
   "draft",
   "active",
@@ -68,19 +42,6 @@ export const externalLinkStatusEnum = pgEnum("external_link_status", [
   "failed",
   "unpublished",
 ]);
-
-export const userStatusEnum = pgEnum("user_status", [
-  "active",
-  "suspended",
-  "deleted",
-]);
-
-// Minimal demo table to keep existing TRPC router working
-export const posts = pgTable("post", (t) => ({
-  id: t.uuid("id").primaryKey().defaultRandom().notNull(),
-  name: t.varchar("name", { length: 256 }).notNull(),
-  createdAt: t.timestamp("created_at").defaultNow().notNull(),
-}));
 
 // Listings
 export const listing = pgTable(
@@ -110,6 +71,10 @@ export const listing = pgTable(
     // Cross-post/import flags
     imported: boolean("imported").default(false).notNull(),
     importedAt: timestamp("imported_at"),
+
+    // Bumping/promotion for display ordering
+    displayOrdering: integer("display_ordering").default(0).notNull(),
+
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
@@ -118,8 +83,9 @@ export const listing = pgTable(
     index("listings_category_idx").on(table.subCategoryId),
     index("listings_status_idx").on(table.status),
     index("listings_price_idx").on(table.price),
+    index("listings_display_ordering_idx").on(table.displayOrdering),
     uniqueIndex("listings_public_id_uk").on(table.publicId),
-  ],
+  ]
 );
 
 export type ListingInsert = InferInsertModel<typeof listing>;
@@ -146,7 +112,7 @@ export const listingView = pgTable(
   (table) => [
     index("listing_view_listing_id_idx").on(table.listingId),
     index("listing_view_viewer_id_idx").on(table.viewerId),
-  ],
+  ]
 );
 
 export const listingImageStatusEnum = pgEnum("listing_image_status", [
@@ -169,7 +135,7 @@ export const listingImage = pgTable(
     createdAt: timestamp("created_at").defaultNow().notNull(),
     status: listingImageStatusEnum("status").notNull(),
   },
-  (table) => [index("listing_images_listing_id_idx").on(table.listingId)],
+  (table) => [index("listing_images_listing_id_idx").on(table.listingId)]
 );
 
 // Cross-post/external references
@@ -195,9 +161,9 @@ export const listingExternal = pgTable(
     index("listing_external_platform_idx").on(table.platform),
     uniqueIndex("listing_external_platform_external_id_uk").on(
       table.platform,
-      table.externalId,
+      table.externalId
     ),
-  ],
+  ]
 );
 
 // Favorites (wishlists)
@@ -215,7 +181,7 @@ export const favorite = pgTable(
   },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
-  ],
+  ]
 );
 
 // Messages (simple listing-based messaging)
@@ -240,7 +206,7 @@ export const message = pgTable(
     index("messages_listing_id_idx").on(table.listingId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_receiver_id_idx").on(table.receiverId),
-  ],
+  ]
 );
 
 export const listingReport = pgTable(
@@ -259,5 +225,5 @@ export const listingReport = pgTable(
     reason: text("reason").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("reports_reporter_id_idx").on(table.reporterId)],
+  (table) => [index("reports_reporter_id_idx").on(table.reporterId)]
 );

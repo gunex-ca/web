@@ -20,8 +20,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const listingRelations = relations(listing, ({ many, one }) => ({
   seller: one(user, { fields: [listing.sellerId], references: [user.id] }),
   images: many(listingImage),
-  externals: many(listingExternal),
-  reviews: many(review),
+  external: one(listingExternal),
 }));
 
 export const listingImageRelations = relations(listingImage, ({ one }) => ({
@@ -38,7 +37,7 @@ export const listingExternalRelations = relations(
       fields: [listingExternal.listingId],
       references: [listing.id],
     }),
-  }),
+  })
 );
 
 export const reviewRelations = relations(review, ({ one }) => ({

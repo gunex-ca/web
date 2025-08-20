@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search } from "~/components/Serach";
+import { ListingSearchInput } from "~/components/ListingSerachInput";
 import {
   Carousel,
   CarouselContent,

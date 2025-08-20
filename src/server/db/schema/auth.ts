@@ -1,4 +1,17 @@
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core";
+
+export const userStatusEnum = pgEnum("user_status", [
+  "active",
+  "suspended",
+  "deleted",
+]);
 
 export const user = pgTable("user", (t) => ({
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -61,9 +74,9 @@ export const verification = pgTable("verification", (t) => ({
   value: text("value").notNull(),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
+    () => /* @__PURE__ */ new Date()
   ),
   updatedAt: timestamp("updated_at").$defaultFn(
-    () => /* @__PURE__ */ new Date(),
+    () => /* @__PURE__ */ new Date()
   ),
 }));

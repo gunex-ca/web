@@ -1,28 +1,11 @@
 "use client";
 
+import { useListingsSearchParams } from "~/hooks/use-listings-search-params";
 import { useEffect, useMemo, useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Slider } from "~/components/ui/slider";
 import { Switch } from "~/components/ui/switch";
-import {
-  booleanCodec,
-  numberCodec,
-  optional,
-  useQueryParamsSchema,
-} from "~/hooks/use-query-params";
 
 type UserLocation = { lat: number; lng: number } | null | false;
-
-// Strongly-typed query params schema for distance filter
-const distanceFilterSchema = {
-  // Keep explicit value for both true/false to avoid ambiguity; default to true when absent
-  global: booleanCodec(true, { serializeFalseAs: "0" }),
-  // Optional so we can remove it from URL when global search is enabled
-  distance: optional(numberCodec(50, { min: 10, max: 100 })),
-  // Optional coordinates; only present when local search is enabled and location known
-  lat: optional(numberCodec(0)),
-  lng: optional(numberCodec(0)),
-} as const;
 
 /**
  * Retrieves the user's geolocation when `enabled` is true.
@@ -75,11 +58,7 @@ function useUserLocation(enabled: boolean) {
 }
 
 export const DistanceFilter: React.FC = () => {
-  const router = useRouter();
-  const pathname = usePathname();
-
-  const { values, setValues, useParam, setParam } =
-    useQueryParamsSchema(distanceFilterSchema);
+  const { setValues, useParam } = useListingsSearchParams();
 
   const [isGlobalCanada, setIsGlobalCanada] = useParam("global");
   const [distanceKm, setDistanceKm] = useParam("distance");
@@ -116,7 +95,7 @@ export const DistanceFilter: React.FC = () => {
       <div className="flex items-center gap-2">
         <Switch
           checked={isGlobalCanada}
-          onCheckedChange={(checked) => setParam("global", !!checked)}
+          onCheckedChange={(checked) => setIsGlobalCanada(!!checked)}
           aria-label="Search all of Canada"
         />
         <span className="text-muted-foreground text-xs">
@@ -128,7 +107,7 @@ export const DistanceFilter: React.FC = () => {
         <div className="space-y-2">
           <Slider
             value={[typeof distanceKm === "number" ? distanceKm : 50]}
-            onValueChange={(vals) => setParam("distance", vals[0] ?? 50)}
+            onValueChange={(vals) => setDistanceKm(vals[0] ?? 50)}
             min={10}
             max={100}
             step={10}

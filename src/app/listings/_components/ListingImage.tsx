@@ -16,19 +16,15 @@ type ListingImageProps = {
   alt: string;
   className?: string;
   style?: CSSProperties;
+  imageClassName?: string;
   fallbackClassName?: string;
   fallbackContent?: ReactNode;
 };
 
 const nunito = Nunito({ subsets: ["latin"] });
 
-export const ListingImage: React.FC<ListingImageProps> = ({
-  src,
-  alt,
-  className,
-  style,
-  fallbackClassName,
-  fallbackContent = (
+const FallbackContent = () => {
+  return (
     <div className="flex h-full w-full items-center justify-center gap-2 bg-muted">
       <Favicon className="size-6 fill-muted-foreground dark:fill-muted-foreground" />
       <span
@@ -40,7 +36,17 @@ export const ListingImage: React.FC<ListingImageProps> = ({
         GunEx
       </span>
     </div>
-  ),
+  );
+};
+
+export const ListingImage: React.FC<ListingImageProps> = ({
+  src,
+  alt,
+  className,
+  style,
+  imageClassName,
+  fallbackClassName,
+  fallbackContent = <FallbackContent />,
 }) => {
   const initialSrc = useMemo(() => {
     const cleaned = (src ?? "").trim();
@@ -57,30 +63,33 @@ export const ListingImage: React.FC<ListingImageProps> = ({
     setShowFallback(initialSrc.length === 0);
   }, [initialSrc]);
 
-  if (showFallback) {
-    return (
+  return (
+    <div className={cn(className)} style={style}>
+      <img
+        src={currentSrc}
+        alt={alt}
+        className={cn(
+          "block h-full w-full",
+          imageClassName,
+          showFallback ? "hidden" : undefined
+        )}
+        loading="lazy"
+        decoding="async"
+        onError={() => {
+          setShowFallback(true);
+        }}
+      />
       <div
         aria-label={alt}
         role="img"
-        className={cn(className, fallbackClassName)}
-        style={style}
+        className={cn(
+          "block h-full w-full",
+          fallbackClassName,
+          showFallback ? undefined : "hidden"
+        )}
       >
         {fallbackContent}
       </div>
-    );
-  }
-
-  return (
-    <img
-      src={currentSrc}
-      alt={alt}
-      className={cn(className)}
-      style={style}
-      loading="lazy"
-      decoding="async"
-      onError={() => {
-        setShowFallback(true);
-      }}
-    />
+    </div>
   );
 };

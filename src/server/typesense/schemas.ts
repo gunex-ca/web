@@ -42,28 +42,38 @@ const listingV1: CollectionCreateSchema = {
     { name: "category", type: "string", facet: true },
     { name: "sub_category", type: "string", facet: true },
 
+    { name: "seller_id", type: "string", facet: true },
+    { name: "seller_username", type: "string", facet: true },
+    { name: "seller_email", type: "string", facet: true },
+    { name: "seller_phone", type: "string", facet: true },
+
     { name: "title", type: "string" },
-    { name: "description", type: "string" },
-    { name: "properties", type: "object" },
+    { name: "description_text", type: "string" },
 
     { name: "price", type: "float" },
 
     { name: "location", type: "geopoint" },
     { name: "province", type: "string", facet: true },
-    { name: "city", type: "string", facet: true },
+    { name: "municipality", type: "string", facet: true },
 
     { name: "status", type: "string", facet: true },
 
-    {
-      name: "embedding",
-      type: "float[]",
-      embed: {
-        from: ["title", "description"],
-        model_config: {
-          model_name: "ts/all-MiniLM-L12-v2",
-        },
-      },
-    },
+    { name: "created_at", type: "int32" },
+    { name: "updated_at", type: "int32" },
+
+    // firearms
+    { name: "condition", type: "string", facet: true, optional: true },
+
+    { name: "caliber", type: "string", facet: true, optional: true },
+    { name: "manufacturer", type: "string", facet: true, optional: true },
+    { name: "model", type: "string", facet: true, optional: true },
+    { name: "country", type: "string", facet: true, optional: true },
+    { name: "country_code", type: "string", facet: true, optional: true },
+    { name: "action", type: "string", facet: true, optional: true },
+    { name: "classification", type: "string", facet: true, optional: true },
+
+    { name: "bow_type", type: "string", facet: true, optional: true },
+    { name: "headed", type: "string", facet: true, optional: true },
   ],
 };
 
@@ -73,9 +83,11 @@ export type ListingV1 = {
   category: string;
   sub_category: string;
   title: string;
-  description: string;
-  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-  properties: Record<string, any>;
+  description_text: string;
+  price: number;
+
+  province: string;
+  municipality: string;
 };
 
 export const schemas = [frtV1];
