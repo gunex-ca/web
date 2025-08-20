@@ -15,6 +15,6 @@ export default function RootLayout({
 }
 
 export const metadata: Metadata = {
-  title: "Listings • Gunex",
-  description: "Browse the latest listings on Gunex.",
+  title: "Listings • GunEx",
+  description: "Browse the latest listings on GunEx.",
 };

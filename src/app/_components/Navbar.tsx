@@ -5,6 +5,7 @@ import { Button } from "~/components/ui/button";
 import { cn } from "~/components/utils";
 import { auth } from "~/lib/auth";
 import { Favicon } from "./Favicon";
+import { HelpDropdown } from "./HelpDropdown";
 import { NavbarContainer } from "./NavbarClient";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { ProfileDropdown } from "./ProfileDropdown";
@@ -34,9 +35,7 @@ export default async function Navbar({
           <Link href="/" className="hover:text-foreground">
             Categories
           </Link>
-          <Link href="/faq" className="hover:text-foreground">
-            FAQ
-          </Link>
+          <HelpDropdown />
           <Link href="/about" className="hover:text-foreground">
             About
           </Link>

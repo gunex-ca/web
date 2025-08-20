@@ -46,12 +46,13 @@ export async function generateMetadata({
     with: {
       seller: true,
       images: true,
+      external: true,
     },
   });
 
   if (!listing) {
     return {
-      title: "Listing not found • Gunex",
+      title: "Listing not found • GunEx",
       description: "This listing could not be found.",
     };
   }
@@ -60,7 +61,8 @@ export async function generateMetadata({
     ? formatCurrency(listing.price)
     : "Contact for price";
 
-  const postalCode = findPostalCode(listing.seller.postalCode ?? "");
+  const pc = listing.seller?.postalCode ?? listing.external?.postalCode;
+  const postalCode = findPostalCode(pc ?? "");
   const location =
     postalCode != null
       ? [postalCode.city, postalCode.province].join(", ")
@@ -87,17 +89,17 @@ export async function generateMetadata({
     : `${categoryName} for sale in ${location} • ${price}`;
 
   return {
-    title: `${title} • Gunex`,
+    title: `${title} • GunEx`,
     description,
     alternates: {
       canonical: `/listings/${listingId}`,
     },
     openGraph: {
-      title: `${title} • Gunex`,
+      title: `${title} • GunEx`,
       description,
       type: "website",
       url: `/listings/${listingId}`,
-      siteName: "Gunex",
+      siteName: "GunEx",
       ...(imageUrl && {
         images: [
           {
@@ -111,7 +113,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${title} • Gunex`,
+      title: `${title} • GunEx`,
       description,
       ...(imageUrl && {
         images: [imageUrl],

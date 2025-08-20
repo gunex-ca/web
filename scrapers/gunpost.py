@@ -4,6 +4,10 @@ from typing import TypedDict, Optional
 import re
 from datetime import datetime
 import json
+import hashlib
+from decimal import Decimal, InvalidOperation
+import os
+import pytz
 
 
 def get_gunpost_ads(url="https://www.gunpost.ca/ads", page=1):
@@ -16,11 +20,12 @@ def get_gunpost_ads(url="https://www.gunpost.ca/ads", page=1):
 
 class GunpostAd(TypedDict):
     title: str
-    url: str
-    price: Optional[str]
-    postal_code: Optional[str]
-    description: Optional[str]
-    date: Optional[datetime]
+    price: int
+    createdAt: str
+    description: str
+    properties: dict
+    subCategoryId: str
+    external: dict
 
 
 def extract_postal_code(location: Optional[str]) -> Optional[str]:
@@ -61,6 +66,29 @@ def parse_post_date(date_text: str):
     return None
 
 
+def parse_price_to_int(price_text: str) -> Optional[int]:
+    """
+    Parse a price string like "$1,234.56" or "800.00" to an integer dollar amount.
+    Returns 0 for FREE, None if not parseable.
+    """
+    if not price_text:
+        return None
+    text = price_text.strip().upper()
+    if "FREE" in text:
+        return 0
+    # Remove currency symbols and spaces, keep digits, comma, dot, minus
+    text = re.sub(r"[^0-9.,-]", "", text)
+    # Drop thousands separators
+    text = text.replace(",", "")
+    if text in {"", ".", "-", "-."}:
+        return None
+    try:
+        value = Decimal(text)
+    except InvalidOperation:
+        return None
+    return int(value)
+
+
 key_map = {
     "bullet diameter": "caliber",
 }
@@ -74,6 +102,14 @@ conditions_map = {
 }
 
 categories_map = {
+    "ReloadingDies": "reloading-dies",
+    "ReloadingPresses": "reloading-presses",
+    "Shooting & Range GearHolsters": "shooting-range-gear-holsters",
+    "AmmunitionLive Ammo": "ammunition-live-ammo",
+    "Firearm Components, Accessories, & ToolsChoke Tubes": "firearm-components-accessories-tools-choke-tubes",
+    "HuntingPacks": "hunting-packs",
+    "ArcheryBows": "archery-bows",
+    "ReloadingTools & Accessories": "reloading-tools-accessories",
     "OpticsRifle Scopes": "optics-rifle-scopes",
     "OpticsMiscellaneous": "optics-miscellaneous",
     "OpticsLaser Sights": "optics-laser-sights",
@@ -85,12 +121,28 @@ categories_map = {
     "FirearmsShotguns": "firearms-shotguns",
     "FirearmsHandguns": "firearms-handguns",
     "BladesSwords": "blades-swords",
-    "BladesKnives": "blades-knives",
     "BladesMachetes": "blades-machetes",
     "BladesSpears": "blades-spears",
     "BladesAxes": "blades-axes",
     "BladesPolearms": "blades-polearms",
     "BladesOther": "blades-other",
+    "BladesKnives & Tools": "blades-knives-tools",
+    "Firearm Components, Accessories, & ToolsStocks & Grips": "firearm-components-accessories-tools-stocks-grips",
+    "Shooting & Range GearMiscellaneous": "shooting-range-gear-miscellaneous",
+    "ReloadingBullets & Brass": "reloading-bullets-brass",
+    "Firearm Components, Accessories, & ToolsBarrels": "firearm-components-accessories-tools-barrels",
+    "Firearm Components, Accessories, & ToolsMagazines & Clips": "firearm-components-accessories-tools-magazines-clips",
+    "Firearm Components, Accessories, & ToolsTools": "firearm-components-accessories-tools-tools",
+    "OpticsSpotting Scopes": "optics-spotting-scopes",
+    "Firearm Components, Accessories, & ToolsFirearm Care": "firearm-components-accessories-tools-firearm-care",
+    "Firearm Components, Accessories, & ToolsMagazines & Clips": "firearm-components-accessories-tools-magazines-clips",
+    "ReloadingSmokeless Powder": "reloading-smokeless-powder",
+    "ArcheryMiscellaneous": "archery-miscellaneous",
+    "OpticsRings/Bases/Mounts": "optics-rings-bases-mounts",
+    "Firearm Components, Accessories, & ToolsBipods": "firearm-components-accessories-tools-bipods",
+    "FirearmsMuzzleloaders": "firearms-muzzleloaders",
+    "BooksHunting Literature": "books-hunting-literature",
+    "Shooting & Range GearShooting Rests": "shooting-range-gear-shooting-rests",
 }
 
 caliber = {
@@ -315,13 +367,16 @@ def map_properties(properties: dict) -> tuple[str, dict]:
         if key == "category":
             category = categories_map.get(value, "")
             if not category:
-                print(f"Unknown category: {value}")
+                print(f"\033[93mUnknown category: {value}\033[0m")
             continue
 
         if key == "caliber":
             if value not in caliber:
-                print(f"Unknown caliber: {value}")
+                print(f"\033[93mUnknown caliber: {value}\033[0m")
             value = caliber.get(value, value)
+        
+        if key == "hand" or key == "handed" or key == "handedness":
+            key = "handed"
 
         properties_normalized[key] = value
 
@@ -329,87 +384,177 @@ def map_properties(properties: dict) -> tuple[str, dict]:
 
 
 if __name__ == "__main__":
-    ads = get_gunpost_ads()
-    for ad in ads:
-        first_link = ad.find("a", href=True)
-        
-        if not (first_link and first_link['href'].startswith('/')):
-            continue
-
-        post_date = ad.find("span", class_="node__pubdate")
-        if not post_date:
-            print(f"Failed to find post date: {post_date} -- {first_link}")
-            continue
-
-        date = parse_post_date(post_date.text.strip())
-        if isinstance(date, datetime):
-            date = date.isoformat()
-
-        if not date:
-            print(f"Failed to parse date: {first_link} -- {post_date}")
-            continue
-
-        ad_url = f"https://www.gunpost.ca{first_link['href']}"
-        response = requests.get(ad_url)
-        ad_soup = BeautifulSoup(response.text, "html.parser")
-
-        price_div = ad_soup.find("div", class_="price")
-        price = price_div.text.strip()
-
-        post_location = ad_soup.find("div", class_="post-location")
-        location = post_location.text.strip().upper()
-        postalcode = extract_postal_code(location)
-
-        title_h1 = ad_soup.find("h1", class_="node__title")
-        title = title_h1.text.strip() if title_h1 else ""
-
-        username_div = ad_soup.find("div", class_="member-name")
-        username = username_div.text.strip()
-
-        description_div = ad_soup.find("div", class_="body")
-        description = description_div.find("div", class_="field__item")
-
-        properties = {}
-        details = ad_soup.find_all("div", class_="firearm-details")
-        # Parse firearm details into properties dictionary
-        for detail in details:
-            dl = detail.find("dl")
-            if not dl:
+    for page in range(1, 10):
+        ads = get_gunpost_ads(page=page)
+        print(f"\033[91mPage: {page}\033[0m")
+        for ad in ads:
+            first_link = ad.find("a", href=True)
+            
+            if not (first_link and first_link['href'].startswith('/')):
                 continue
-            dt_tags = dl.find_all("dt")
-            for dt in dt_tags:
-                key = dt.get_text(strip=True)
-                dd = dt.find_next_sibling("dd")
-                if not dd:
-                    continue
-                # If dd contains a div.field__item-wrapper, extract its text, else use dd's text
-                item_wrapper = dd.find("span", class_="field__item-wrapper")
-                if item_wrapper:
-                    value = item_wrapper.get_text(strip=True)
+
+            post_date = ad.find("span", class_="node__pubdate")
+            if not post_date:
+                print(f"Failed to find post date: {post_date} -- {first_link}")
+                continue
+
+            date = parse_post_date(post_date.text.strip())
+            if isinstance(date, datetime):
+                
+                est = pytz.timezone("America/Toronto")
+                if date.tzinfo is None:
+                    date = est.localize(date)
                 else:
-                    # Remove any <i> tags (like the angle-right icon)
-                    for i_tag in dd.find_all("i"):
-                        i_tag.decompose()
-                    value = dd.get_text(strip=True)
-                properties[key] = value
+                    date = date.astimezone(est)
+                date = date.isoformat()
+            # Print out how long ago it was posted in 1h 2s format
+            if date:
+                now = datetime.now(pytz.timezone("America/Toronto"))
+                if isinstance(date, str):
+                    # Parse back to datetime if needed
+                    date_dt = datetime.fromisoformat(date)
+                else:
+                    date_dt = date
+                delta = now - date_dt
+                total_seconds = int(delta.total_seconds())
 
-        category, properties_normalized = map_properties(properties)
-        gunpost_ad: GunpostAd = {
-            "externalId": ad_url,
-            "username": username,
-            "title": title,
-            "url": ad_url,
-            "price": price,
-            "date": str(date),
-            "postalCode": postalcode,
-            "description": str(description),
-            "properties": properties_normalized,
-            "category": category,
-        }
+                days, remainder = divmod(total_seconds, 86400)
+                months = 0
+                # Approximate months as 30 days
+                if days >= 30:
+                    months = days // 30
+                    days = days % 30
 
-        print(json.dumps(
-            gunpost_ad,
-            indent=2,
-            ensure_ascii=False,
-        ))
-        print("-"*100)
+                hours, remainder = divmod(remainder, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                parts = []
+                if months > 0:
+                    parts.append(f"{months}mo")
+                if days > 0:
+                    parts.append(f"{days}d")
+                if hours > 0:
+                    parts.append(f"{hours}h")
+                if minutes > 0:
+                    parts.append(f"{minutes}m")
+                if seconds > 0 or not parts:
+                    parts.append(f"{seconds}s")
+                print(f"Posted {', '.join(parts)} ago")
+
+            if not date:
+                print(f"\033[93mFailed to parse date: {first_link} -- {post_date}\033[0m")
+                continue
+
+            ad_url = f"https://www.gunpost.ca{first_link['href']}"
+            response = requests.get(ad_url)
+            ad_soup = BeautifulSoup(response.text, "html.parser")
+
+            price_div = ad_soup.find("div", class_="price")
+            price = price_div.text.strip()
+
+            post_location = ad_soup.find("div", class_="post-location")
+            location = post_location.text.strip().upper()
+            postalcode = extract_postal_code(location)
+
+            title_h1 = ad_soup.find("h1", class_="node__title")
+            title = title_h1.text.strip() if title_h1 else ""
+
+            username_div = ad_soup.find("div", class_="member-name")
+            username = username_div.text.strip()
+
+            description_div = ad_soup.find("div", class_="body")
+            description = description_div.find("div", class_="field__item")
+
+            properties = {}
+            details = ad_soup.find_all("div", class_="firearm-details")
+            # Parse firearm details into properties dictionary
+            for detail in details:
+                dl = detail.find("dl")
+                if not dl:
+                    continue
+                dt_tags = dl.find_all("dt")
+                for dt in dt_tags:
+                    key = dt.get_text(strip=True)
+                    dd = dt.find_next_sibling("dd")
+                    if not dd:
+                        continue
+                    # If dd contains a div.field__item-wrapper, extract its text, else use dd's text
+                    item_wrapper = dd.find("span", class_="field__item-wrapper")
+                    if item_wrapper:
+                        value = item_wrapper.get_text(strip=True)
+                    else:
+                        # Remove any <i> tags (like the angle-right icon)
+                        for i_tag in dd.find_all("i"):
+                            i_tag.decompose()
+                        value = dd.get_text(strip=True)
+                    properties[key] = value
+
+            rating_div = ad_soup.find('div', class_='rating')
+            user_rating = 0.0
+            user_reviews = 0
+            if rating_div:
+                rating_text = rating_div.get_text(strip=True)
+                parts = rating_text.split(' ')
+                if len(parts) == 2:
+                    try:
+                        user_rating = float(parts[0])
+                        user_reviews = int(parts[1].replace('(', '').replace(')', ''))
+                    except ValueError:
+                        pass
+
+
+            sidebar = ad_soup.find("div", id="rid-sidebar-first")
+            first_sidebar_div = sidebar.find("div") if sidebar else None
+            image_tags = first_sidebar_div.find_all("img")
+            image_urls = []
+            for img in image_tags:
+                src = img.get("src")
+                if src and src.strip() and src.strip().startswith('https://media.gunpost.ca/prod'):
+
+                    if "dad_square" in src:
+                        src = src.replace("dad_square", "dad_large")
+                    image_urls.append(src.strip())
+
+            category, properties_normalized = map_properties(properties)
+
+            price_value = parse_price_to_int(price)
+            if price_value is None:
+                print(f"\033[93mFailed to parse price: {price} -- {ad_url}\033[0m")
+                print("-"*100)
+                continue
+
+            gunpost_ad = [{
+                "title": title,
+                "price": price_value,
+                "createdAt": str(date),
+                "description": str(description),
+                "properties": properties_normalized,
+                "subCategoryId": category,
+                "external": {
+                    "postalCode": postalcode,
+                    "url": ad_url,
+                    "platform": "gunpost",
+                    "externalId": hashlib.md5(ad_url.encode("utf-8")).hexdigest(),
+                    "imageUrls": image_urls,
+                    "sellerUsername": username,
+                    "sellerRating": user_rating,
+                    "sellerReviews": user_reviews,
+                }
+            }]
+
+            try:
+                response = requests.post(
+                    "http://localhost:3000/api/v1/external-listings",
+                    json=gunpost_ad,
+                    timeout=10
+                )
+                print(gunpost_ad[0]["title"])
+                print(f"POST response status: {response.status_code}")
+                try:
+                    response_json = response.json()
+                    # print("Parsed JSON response:")
+                    # print(json.dumps(response_json, indent=2, ensure_ascii=False))
+                except Exception as e:
+                    print(f"Failed to parse response as JSON: {e}")
+            except Exception as e:
+                print(f"Failed to send POST request: {e}")
+            print("-"*100)

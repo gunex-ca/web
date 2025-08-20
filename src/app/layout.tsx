@@ -7,6 +7,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "~/components/ui/sonner";
 import { TRPCReactProvider } from "~/trpc/react";
 import { HydrateClient } from "~/trpc/server";
+import Footer from "./_components/Footer";
 
 export const metadata: Metadata = {
   title: "Create T3 App",
@@ -29,7 +30,7 @@ export default function RootLayout({
       suppressHydrationWarning={true}
     >
       <head />
-      <body suppressHydrationWarning>
+      <body suppressHydrationWarning className="flex min-h-screen flex-col">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -38,7 +39,10 @@ export default function RootLayout({
         >
           <TRPCReactProvider>
             <Toaster />
-            <HydrateClient>{children}</HydrateClient>
+            <div className="flex-1">
+              <HydrateClient>{children}</HydrateClient>
+            </div>
+            <Footer />
           </TRPCReactProvider>
         </ThemeProvider>
       </body>

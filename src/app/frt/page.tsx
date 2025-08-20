@@ -13,9 +13,9 @@ import type { FRTV1 } from "~/server/typesense/schemas";
 import { Search } from "./_components/Search";
 
 export const metadata: Metadata = {
-  title: "RCMP Firearms Reference Table (FRT) Search | Gunex",
+  title: "RCMP Firearms Reference Table (FRT) Search | GunEx",
   description:
-    "Search the RCMP Firearms Reference Table (FRT) on Gunex by FRN, manufacturer, model, country, action and calibre.",
+    "Search the RCMP Firearms Reference Table (FRT) on GunEx by FRN, manufacturer, model, country, action and calibre.",
   keywords: [
     "RCMP",
     "FRT",
@@ -29,18 +29,18 @@ export const metadata: Metadata = {
     "calibre",
   ],
   openGraph: {
-    title: "RCMP Firearms Reference Table (FRT) Search | Gunex",
+    title: "RCMP Firearms Reference Table (FRT) Search | GunEx",
     description:
-      "Search the RCMP Firearms Reference Table (FRT) on Gunex by FRN, manufacturer, model, country, action and calibre.",
+      "Search the RCMP Firearms Reference Table (FRT) on GunEx by FRN, manufacturer, model, country, action and calibre.",
     url: "/frt",
-    siteName: "Gunex",
+    siteName: "GunEx",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "RCMP Firearms Reference Table (FRT) Search | Gunex",
+    title: "RCMP Firearms Reference Table (FRT) Search | GunEx",
     description:
-      "Search the RCMP Firearms Reference Table (FRT) on Gunex by FRN, manufacturer, model, country, action and calibre.",
+      "Search the RCMP Firearms Reference Table (FRT) on GunEx by FRN, manufacturer, model, country, action and calibre.",
   },
   alternates: {
     canonical: "/frt",

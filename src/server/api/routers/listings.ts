@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import {
@@ -24,6 +24,8 @@ const createListingInputSchema = listingInsertSchema.omit({
 
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
 import { env } from "~/env";
+import { categories } from "~/lib/categories";
+import { findPostalCode } from "~/lib/location/postal-codes";
 import { s3 } from "~/server/s3";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
@@ -100,13 +102,47 @@ export const listingRouter = createTRPCRouter({
       return takeFirst(updated);
     }),
 
-  getNewest: publicProcedure.query(async ({ ctx }) => {
-    return ctx.db.query.listing.findMany({
-      with: { images: true },
-      orderBy: (listing, { desc }) => [desc(listing.createdAt)],
-      limit: 10,
-    });
-  }),
+  getNewest: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().optional(),
+        categoryId: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const category = categories.find((c) => c.id === input.categoryId);
+
+      return ctx.db.query.listing
+        .findMany({
+          where: and(
+            eq(schema.listing.status, "active"),
+            category
+              ? inArray(
+                  schema.listing.subCategoryId,
+                  category.children.map((s) => s.id),
+                )
+              : undefined,
+          ),
+          with: { images: true, seller: true, external: true },
+          orderBy: (listing, { desc }) => [desc(listing.createdAt)],
+          limit: input.limit ?? 50,
+        })
+        .then((listings) =>
+          listings.map((listing) => {
+            const pc =
+              listing.seller?.postalCode ?? listing.external?.postalCode;
+            const location = findPostalCode(pc ?? "");
+            return {
+              ...listing,
+              postalCode: pc,
+              location:
+                location != null
+                  ? `${location?.city}, ${location?.province}`
+                  : null,
+            };
+          }),
+        );
+    }),
 
   getByPublicId: publicProcedure
     .input(z.object({ publicId: z.string().min(1) }))
@@ -122,6 +158,7 @@ export const listingRouter = createTRPCRouter({
       z.object({
         contentType: z.enum(["image/jpeg", "image/png", "image/webp"]),
         alt: z.string().min(1),
+        name: z.string().min(1),
         listingId: z.string().min(1),
         sortOrder: z.number(),
       }),

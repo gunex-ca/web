@@ -2,15 +2,15 @@ import type { Metadata } from "next";
 import { SignUpForm } from "./_components/SignUpForm";
 
 export const metadata: Metadata = {
-  title: "Create your account • Gunex",
-  description: "Sign up for a Gunex account.",
+  title: "Create your account • GunEx",
+  description: "Sign up for a GunEx account.",
   alternates: { canonical: "/sign-up" },
   openGraph: {
-    title: "Create your account • Gunex",
-    description: "Sign up for a Gunex account.",
+    title: "Create your account • GunEx",
+    description: "Sign up for a GunEx account.",
     url: "/sign-up",
     type: "website",
-    siteName: "Gunex",
+    siteName: "GunEx",
   },
 };
 

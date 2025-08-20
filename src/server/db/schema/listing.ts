@@ -52,9 +52,9 @@ export const listing = pgTable(
       .notNull()
       .unique()
       .$defaultFn(() => listingId()),
-    sellerId: uuid("seller_id")
-      .notNull()
-      .references(() => user.id, { onDelete: "cascade" }),
+    sellerId: uuid("seller_id").references(() => user.id, {
+      onDelete: "cascade",
+    }),
 
     subCategoryId: text("sub_category_id").notNull(),
     title: varchar("title", { length: 255 }).notNull(),
@@ -85,7 +85,7 @@ export const listing = pgTable(
     index("listings_price_idx").on(table.price),
     index("listings_display_ordering_idx").on(table.displayOrdering),
     uniqueIndex("listings_public_id_uk").on(table.publicId),
-  ]
+  ],
 );
 
 export type ListingInsert = InferInsertModel<typeof listing>;
@@ -112,7 +112,7 @@ export const listingView = pgTable(
   (table) => [
     index("listing_view_listing_id_idx").on(table.listingId),
     index("listing_view_viewer_id_idx").on(table.viewerId),
-  ]
+  ],
 );
 
 export const listingImageStatusEnum = pgEnum("listing_image_status", [
@@ -130,12 +130,13 @@ export const listingImage = pgTable(
       .notNull()
       .references(() => listing.id, { onDelete: "cascade" }),
     objectKey: varchar("object_key", { length: 255 }).notNull(),
+    name: text("name"),
     alt: varchar("alt", { length: 255 }),
     sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     status: listingImageStatusEnum("status").notNull(),
   },
-  (table) => [index("listing_images_listing_id_idx").on(table.listingId)]
+  (table) => [index("listing_images_listing_id_idx").on(table.listingId)],
 );
 
 // Cross-post/external references
@@ -149,21 +150,26 @@ export const listingExternal = pgTable(
       .references(() => listing.id, { onDelete: "cascade" }),
     platform: t.varchar("platform", { length: 64 }).notNull(),
     externalId: t.varchar("external_id", { length: 128 }),
+    postalCode: t.text("postal_code"),
     url: t.varchar("url", { length: 2048 }),
     meta: t.jsonb("meta"),
     firstSeenAt: t.timestamp("first_seen_at").defaultNow().notNull(),
     lastSyncedAt: t.timestamp("last_synced_at"),
     createdAt: t.timestamp("created_at").defaultNow().notNull(),
     updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
+
+    sellerUsername: t.varchar("seller_username", { length: 128 }),
+    sellerRating: t.numeric("seller_rating"),
+    sellerReviews: t.integer("seller_reviews"),
   }),
   (table) => [
     index("listing_external_listing_id_idx").on(table.listingId),
     index("listing_external_platform_idx").on(table.platform),
     uniqueIndex("listing_external_platform_external_id_uk").on(
       table.platform,
-      table.externalId
+      table.externalId,
     ),
-  ]
+  ],
 );
 
 // Favorites (wishlists)
@@ -181,7 +187,7 @@ export const favorite = pgTable(
   },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
-  ]
+  ],
 );
 
 // Messages (simple listing-based messaging)
@@ -206,7 +212,7 @@ export const message = pgTable(
     index("messages_listing_id_idx").on(table.listingId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_receiver_id_idx").on(table.receiverId),
-  ]
+  ],
 );
 
 export const listingReport = pgTable(
@@ -225,5 +231,5 @@ export const listingReport = pgTable(
     reason: text("reason").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("reports_reporter_id_idx").on(table.reporterId)]
+  (table) => [index("reports_reporter_id_idx").on(table.reporterId)],
 );

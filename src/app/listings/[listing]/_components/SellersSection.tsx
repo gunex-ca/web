@@ -1,11 +1,11 @@
 import { Award, CalendarPlus, Star } from "lucide-react";
 import type { FC } from "react";
 
-type SellerInfo = {
+export type SellerInfo = {
   username: string;
   rating: number;
   reviews: number;
-  createdAt: Date;
+  createdAt?: Date;
 };
 
 type StarRatingProps = {
@@ -50,12 +50,12 @@ export const StarRating: FC<StarRatingProps> = ({
             );
           })}
         </div>
-        {showValue ? (
+        {showValue && (
           <span className="text-muted-foreground text-xs">
             {rating.toFixed(1)}
             {typeof reviewCount === "number" ? ` (${reviewCount})` : ""}
           </span>
-        ) : null}
+        )}
       </div>
     </div>
   );
@@ -82,10 +82,12 @@ export const SellerSection: FC<{ seller: SellerInfo }> = ({ seller }) => (
           <span className="text-muted-foreground">High-rated seller</span>
         </div>
       ) : null}
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <CalendarPlus className="size-4" />
-        <span>Joined in {seller.createdAt.getFullYear()}</span>
-      </div>
+      {seller.createdAt && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <CalendarPlus className="size-4" />
+          <span>Joined in {seller.createdAt.getFullYear()}</span>
+        </div>
+      )}
     </div>
   </div>
 );

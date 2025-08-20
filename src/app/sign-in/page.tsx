@@ -1,8 +1,8 @@
 import { SignInForm } from "./_components/SignInForm";
 
 export const metadata = {
-  title: "Sign in • Gunex",
-  description: "Sign in to your Gunex account.",
+  title: "Sign in • GunEx",
+  description: "Sign in to your GunEx account.",
   alternates: { canonical: "/sign-in" },
 } satisfies import("next").Metadata;
 

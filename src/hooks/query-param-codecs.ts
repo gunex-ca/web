@@ -7,7 +7,7 @@ export type QueryParamCodec<T> = {
 
 export function booleanCodec(
   defaultValue = false,
-  options?: { serializeFalseAs?: "0" | "false" | null }
+  options?: { serializeFalseAs?: "0" | "false" | null },
 ): QueryParamCodec<boolean> {
   const serializeFalseAs = options?.serializeFalseAs ?? null;
   return {
@@ -42,7 +42,7 @@ export function booleanCodec(
 
 export function numberCodec(
   defaultValue: number,
-  options?: { min?: number; max?: number }
+  options?: { min?: number; max?: number },
 ): QueryParamCodec<number> {
   const { min, max } = options ?? {};
   return {
@@ -71,7 +71,7 @@ export function stringCodec(defaultValue: string): QueryParamCodec<string> {
 }
 
 export function optional<T>(
-  codec: QueryParamCodec<T>
+  codec: QueryParamCodec<T>,
 ): QueryParamCodec<T | undefined> {
   return {
     parse: (raw) => (raw === null ? undefined : codec.parse(raw)),

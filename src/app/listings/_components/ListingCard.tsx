@@ -10,10 +10,12 @@ type ListingImageData = {
 export type ListingCardProps = {
   listing: {
     id: string;
+    publicId: string;
     title: string;
     description?: string | null;
     images: ListingImageData[];
     price: string | null;
+    location: string | null;
   };
   className?: string;
 };
@@ -25,7 +27,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({
   return (
     <Link
       key={listing.id}
-      href={`/listings/${listing.id}`}
+      href={`/listings/${listing.publicId}`}
       className={cn("group w-full space-y-2 rounded", className)}
     >
       <div
@@ -47,7 +49,9 @@ export const ListingCard: React.FC<ListingCardProps> = ({
         <div className="mb-1 font-semibold">
           {formatCurrency(listing.price)}
         </div>
-        <div className="text-muted-foreground text-xs">Location</div>
+        <div className="text-muted-foreground text-xs">
+          {listing.location ?? "Location not available"}
+        </div>
       </div>
     </Link>
   );

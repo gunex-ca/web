@@ -2,11 +2,11 @@
 
 import { Nunito } from "next/font/google";
 import {
+  type CSSProperties,
+  type ReactNode,
   useEffect,
   useMemo,
   useState,
-  type CSSProperties,
-  type ReactNode,
 } from "react";
 import { Favicon } from "~/app/_components/Favicon";
 import { cn } from "~/components/utils";
@@ -30,7 +30,7 @@ const FallbackContent = () => {
       <span
         className={cn(
           "mt-0.5 font-bold text-muted-foreground text-xl tracking-wide",
-          nunito.className
+          nunito.className,
         )}
       >
         GunEx
@@ -55,7 +55,7 @@ export const ListingImage: React.FC<ListingImageProps> = ({
 
   const [currentSrc, setCurrentSrc] = useState<string>(initialSrc);
   const [showFallback, setShowFallback] = useState<boolean>(
-    initialSrc.length === 0
+    initialSrc.length === 0,
   );
 
   useEffect(() => {
@@ -71,7 +71,7 @@ export const ListingImage: React.FC<ListingImageProps> = ({
         className={cn(
           "block h-full w-full",
           imageClassName,
-          showFallback ? "hidden" : undefined
+          showFallback ? "hidden" : undefined,
         )}
         loading="lazy"
         decoding="async"
@@ -85,7 +85,7 @@ export const ListingImage: React.FC<ListingImageProps> = ({
         className={cn(
           "block h-full w-full",
           fallbackClassName,
-          showFallback ? undefined : "hidden"
+          showFallback ? undefined : "hidden",
         )}
       >
         {fallbackContent}

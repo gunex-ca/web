@@ -1,7 +1,7 @@
 "use client";
 
-import { useListingsSearchParams } from "~/hooks/use-listings-search-params";
 import { getDefaultListingsSearchParams } from "~/hooks/listings-search-params-schema";
+import { useListingsSearchParams } from "~/hooks/use-listings-search-params";
 
 export const ClearFiltersButton: React.FC = () => {
   const { setValues } = useListingsSearchParams();

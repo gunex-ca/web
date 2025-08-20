@@ -96,8 +96,13 @@ export function getAllCities(): City[] {
 const all = getAllPostalCodes();
 
 export function findPostalCode(code: string): PostalCodeEntry | undefined {
-  // Normalize: remove spaces, uppercase
   const norm = code.replace(/\s+/g, "").toUpperCase();
+
+  if (code.length === 3)
+    return all.find((entry) =>
+      entry.postalCode.replace(/\s+/g, "").toUpperCase().startsWith(norm),
+    );
+
   return all.find(
     (entry) => entry.postalCode.replace(/\s+/g, "").toUpperCase() === norm,
   );

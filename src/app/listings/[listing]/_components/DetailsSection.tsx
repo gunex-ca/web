@@ -9,7 +9,42 @@ export type ListingProperties = Record<string, string | number> & {
   barrelLengthIn?: number;
 };
 
-const dontShowIfEmpty = "Sights";
+const dontShowIfEmpty = ["sights", "barrelLengthIn"];
+
+// Define the preferred order for property keys
+const propertyOrder = [
+  "condition",
+  "manufacturer",
+  "model",
+  "caliber",
+  "action",
+  "classification",
+  "handed",
+  "capacity",
+  "sights",
+];
+
+// Custom sort function for properties
+const sortProperties = (entries: [string, string | number][]) => {
+  return entries.sort(([keyA], [keyB]) => {
+    const indexA = propertyOrder.indexOf(keyA);
+    const indexB = propertyOrder.indexOf(keyB);
+
+    // If both keys are in the order array, sort by their position
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+
+    // If only keyA is in the order array, it comes first
+    if (indexA !== -1) return -1;
+
+    // If only keyB is in the order array, it comes first
+    if (indexB !== -1) return 1;
+
+    // If neither is in the order array, sort alphabetically
+    return keyA.localeCompare(keyB);
+  });
+};
 
 export const DetailsSection: FC<{ properties: ListingProperties }> = ({
   properties,
@@ -17,7 +52,7 @@ export const DetailsSection: FC<{ properties: ListingProperties }> = ({
   <div className="mt-6">
     <h2 className="mb-2 font-medium text-md text-muted-foreground">Details</h2>
     <dl className="space-y-1 text-sm">
-      {Object.entries(properties).map(([key, value]) => {
+      {sortProperties(Object.entries(properties)).map(([key, value]) => {
         if (dontShowIfEmpty.includes(key) && !value) return null;
         return (
           <div key={key} className="flex items-center gap-2">

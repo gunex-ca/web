@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { ListingSearchInput } from "~/components/ListingSerachInput";
-import Navbar from "../_components/Navbar";
 import { Separator } from "~/components/ui/separator";
-import { DistanceFilter } from "./_components/DistanceFilter";
-import { PriceFilter } from "./_components/PriceFilter";
-import { ListingCard } from "./_components/ListingCard";
-import { ClearFiltersButton } from "./_components/ClearFiltersButton";
 import {
-  parseListingsSearchParams,
   type ListingsSearchParams,
+  parseListingsSearchParams,
 } from "~/hooks/listings-search-params-schema";
+import Navbar from "../_components/Navbar";
+import { ClearFiltersButton } from "./_components/ClearFiltersButton";
+import { DistanceFilter } from "./_components/DistanceFilter";
+import { ListingCard } from "./_components/ListingCard";
+import { PriceFilter } from "./_components/PriceFilter";
 
+import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "~/server/db";
 
 export default async function ListingsPage({
@@ -41,6 +42,7 @@ export default async function ListingsPage({
     with: {
       seller: true,
       images: true,
+      external: true,
     },
   });
 
@@ -72,9 +74,23 @@ export default async function ListingsPage({
           </div>
 
           <div className="grid min-w-0 flex-grow grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listings.map((listing) => (
-              <ListingCard key={listing.id} listing={listing} />
-            ))}
+            {listings.map((listing) => {
+              const pc =
+                listing.seller?.postalCode ?? listing.external?.postalCode;
+              const location = findPostalCode(pc ?? "");
+              return (
+                <ListingCard
+                  key={listing.id}
+                  listing={{
+                    ...listing,
+                    location:
+                      location != null
+                        ? `${location?.city}, ${location?.province}`
+                        : null,
+                  }}
+                />
+              );
+            })}
           </div>
         </div>
       </div>
@@ -83,6 +99,6 @@ export default async function ListingsPage({
 }
 
 export const metadata: Metadata = {
-  title: "Listings • Gunex",
-  description: "Browse the latest listings on Gunex.",
+  title: "Listings • GunEx",
+  description: "Browse the latest listings on GunEx.",
 };

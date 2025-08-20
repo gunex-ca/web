@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { headers } from "next/headers";
 import { notFound } from "next/navigation";
 import { ImageCarousel } from "~/app/listings/[listing]/_components/ImageCarousel";
+import { formatCurrency } from "~/components/utils";
 import { auth } from "~/lib/auth";
 import { CATEGORY } from "~/lib/categories";
 import { findPostalCode } from "~/lib/location/postal-codes";
@@ -16,9 +17,11 @@ import { MessageForm } from "./_components/MessageForm";
 import { MetaRow } from "./_components/MetaRow";
 import { PhoneReveal } from "./_components/PhoneReveal";
 import { PriceSection } from "./_components/PriceSection";
-import { SellerSection } from "./_components/SellersSection";
+import { type SellerInfo, SellerSection } from "./_components/SellersSection";
 import { TitleSection } from "./_components/TitleSection";
-import { formatCurrency } from "~/components/utils";
+
+import Link from "next/link";
+import { Button } from "~/components/ui/button";
 
 type PageProps = {
   params: Promise<{ listing: string }>;
@@ -33,6 +36,7 @@ export default async function ListingPage({ params }: PageProps) {
     with: {
       seller: true,
       images: true,
+      external: true,
     },
   });
   if (!listing) notFound();
@@ -41,7 +45,9 @@ export default async function ListingPage({ params }: PageProps) {
     ? formatCurrency(listing.price)
     : "Contact for price";
 
-  const postalCode = findPostalCode(listing.seller.postalCode ?? "");
+  const postalCode = findPostalCode(
+    listing.seller?.postalCode ?? listing?.external?.postalCode ?? "",
+  );
   const location =
     postalCode != null
       ? [postalCode.city, postalCode.province].join(", ")
@@ -58,6 +64,15 @@ export default async function ListingPage({ params }: PageProps) {
 
   const subCategory = CATEGORY[listing.subCategoryId];
   if (subCategory == null || "children" in subCategory) return notFound();
+
+  const isUsersListing = session?.user.id === listing.sellerId;
+
+  const seller: SellerInfo = {
+    ...listing.seller,
+    username: listing.external?.sellerUsername ?? "",
+    rating: Number(listing.external?.sellerRating ?? "0"),
+    reviews: listing.external?.sellerReviews ?? 0,
+  };
 
   return (
     <>
@@ -92,19 +107,33 @@ export default async function ListingPage({ params }: PageProps) {
                 </div>
               )}
 
-              <SellerSection
-                seller={{
-                  ...listing.seller,
-                  username: listing.seller.username ?? "",
-                  rating: 4.5,
-                  reviews: 100,
-                }}
-              />
+              {(listing.seller != null ||
+                listing.external?.sellerUsername != null) && (
+                <SellerSection seller={seller} />
+              )}
 
-              <PhoneReveal phoneNumber={String(listing.seller.phoneNumber)} />
+              {listing.seller?.phoneNumber != null && (
+                <PhoneReveal phoneNumber={String(listing.seller.phoneNumber)} />
+              )}
             </div>
 
-            {session != null && listing.seller.id !== session.user.id && (
+            {session != null && isUsersListing ? (
+              <div className="sticky bottom-0 shrink-0 space-y-2 border-t bg-background p-4 text-sm">
+                <Button variant="secondary" asChild className="w-full">
+                  <Link href={`/listings/${listing.publicId}/edit`}>
+                    Edit listing
+                  </Link>
+                </Button>
+              </div>
+            ) : listing.external != null ? (
+              <div className="sticky bottom-0 shrink-0 space-y-2 border-t bg-background p-4 text-sm">
+                <Button variant="secondary" asChild className="w-full">
+                  <Link href={listing.external.url ?? ""} rel="nofollow">
+                    View External Listing
+                  </Link>
+                </Button>
+              </div>
+            ) : (
               <div className="sticky bottom-0 shrink-0 space-y-2 border-t bg-background p-4 text-sm">
                 <MessageForm />
               </div>

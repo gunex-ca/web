@@ -15,7 +15,7 @@ import { ListingFormProvider } from "./_components/ListingState";
 import { Preview } from "./_components/Preview";
 
 export const metadata: Metadata = {
-  title: "New listing • Gunex",
+  title: "New listing • GunEx",
   description: "Create a new listing to sell your item.",
   alternates: { canonical: "/listings/new" },
 };

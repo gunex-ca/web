@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ListingSearchInput } from "~/components/ListingSerachInput";
+
 import {
   Carousel,
   CarouselContent,
@@ -8,24 +7,33 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "~/components/ui/carousel";
-import { cn } from "~/components/utils";
 import { categories } from "~/lib/categories";
-import { buildImageUrl } from "~/server/s3";
 import { api } from "~/trpc/server";
-import { CategoryCarouselItem } from "./_components/CategoryCarouselItem";
 import { ListingCard } from "../listings/_components/ListingCard";
+import { CategoryCarouselItem } from "./_components/CategoryCarouselItem";
 
 export const metadata: Metadata = {
-  title: "Gunex • Buy and sell firearms in Canada",
+  title: "GunEx • Buy and sell firearms in Canada",
   description:
     "Discover and list firearms and accessories across Canada. Browse newest listings and connect with sellers.",
   alternates: { canonical: "/" },
 };
 
-type Listing = Awaited<ReturnType<typeof api.listing.getNewest>>[number];
-
 export default async function Home() {
-  const listings = await api.listing.getNewest();
+  const firearms = await api.listing.getNewest({
+    limit: 50,
+    categoryId: "firearms",
+  });
+
+  const accessories = await api.listing.getNewest({
+    limit: 50,
+    categoryId: "firearm-components-accessories-tools",
+  });
+
+  const archery = await api.listing.getNewest({
+    limit: 50,
+    categoryId: "archery",
+  });
 
   return (
     <div className="mx-auto max-w-7xl space-y-14 px-4 py-10">
@@ -46,17 +54,65 @@ export default async function Home() {
           <CarouselNext />
         </Carousel>
       </div>
+
       <div className="space-y-4">
-        <h2 className="font-semibold text-2xl">Newest listings</h2>
-        <div className="grid grid-cols-1 gap-6 sm:grid-cols-4 lg:grid-cols-5">
-          {listings.map((listing) => (
-            <ListingCard
-              key={listing.id}
-              listing={listing}
-              className="h-32 w-48"
-            />
-          ))}
-        </div>
+        <h2 className="font-semibold text-2xl">Newest Firearms</h2>
+        <Carousel className="w-full" opts={{ slidesToScroll: 2 }}>
+          <CarouselContent>
+            {firearms.map((listing) => {
+              return (
+                <CarouselItem
+                  key={listing.id}
+                  className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                >
+                  <ListingCard listing={listing} />
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="font-semibold text-2xl">Newest Firearm Accessories</h2>
+        <Carousel className="w-full" opts={{ slidesToScroll: 2 }}>
+          <CarouselContent>
+            {accessories.map((listing) => {
+              return (
+                <CarouselItem
+                  key={listing.id}
+                  className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                >
+                  <ListingCard listing={listing} />
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="font-semibold text-2xl">Newest Archery</h2>
+        <Carousel className="w-full" opts={{ slidesToScroll: 2 }}>
+          <CarouselContent>
+            {archery.map((listing) => {
+              return (
+                <CarouselItem
+                  key={listing.id}
+                  className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                >
+                  <ListingCard listing={listing} />
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          <CarouselPrevious />
+          <CarouselNext />
+        </Carousel>
       </div>
     </div>
   );

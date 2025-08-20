@@ -159,15 +159,6 @@ const uploadImageToS3 = async (
   }
 };
 
-// Helper function to get file from image
-const getFileFromImage = (image: { file?: File; id: string }): File | null => {
-  if (!image.file) {
-    console.warn(`No file found for image with id: ${image.id}`);
-    return null;
-  }
-  return image.file;
-};
-
 const isImage = (file: File): boolean => {
   const validTypes = ["image/jpeg", "image/png", "image/webp"];
   return validTypes.includes(file.type);
@@ -188,6 +179,7 @@ const handleImageUploads = async (
     const { presignedUrl } = await getPresignedPostMutation.mutateAsync({
       contentType: image.type as "image/jpeg" | "image/png" | "image/webp",
       alt: `Image ${index + 1}`,
+      name: image.name,
       listingId: listingId,
       sortOrder: index,
     });

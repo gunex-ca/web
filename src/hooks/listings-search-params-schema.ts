@@ -1,10 +1,10 @@
 // Server-safe schema and parsing utilities (no "use client")
 import {
+  type QueryParamCodec,
   booleanCodec,
   numberCodec,
   optional,
   stringCodec,
-  type QueryParamCodec,
 } from "./query-param-codecs";
 
 // Combined schema for all listings search parameters
@@ -44,7 +44,7 @@ export type ListingsSearchParams = {
 
 // Helper to parse search params (works on both server and client)
 export function parseListingsSearchParams(
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
 ): ListingsSearchParams {
   const result: Record<string, unknown> = {};
 

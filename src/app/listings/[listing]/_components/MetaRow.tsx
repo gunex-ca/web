@@ -5,7 +5,7 @@ export const MetaRow: FC<{ createdAt: Date; location: string }> = ({
   createdAt,
   location,
 }) => (
-  <div className="mt-2 text-muted-foreground text-xs">
+  <div className="mt-2 text-muted-foreground text-sm">
     Listed {formatDistanceStrict(createdAt, new Date(), { addSuffix: true })}
     {" in "}
     {location}

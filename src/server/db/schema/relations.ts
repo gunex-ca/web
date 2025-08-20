@@ -6,8 +6,8 @@ import { review } from "./review";
 export const userRelations = relations(user, ({ many }) => ({
   account: many(account),
   listings: many(listing),
-  reviewsGiven: many(review, { relationName: "reviewer" }),
-  reviewsReceived: many(review, { relationName: "reviewee" }),
+  // reviewsGiven: many(review, { relationName: "reviewer" }),
+  // reviewsReceived: many(review, { relationName: "reviewee" }),
 }));
 
 export const accountRelations = relations(account, ({ one }) => ({
@@ -37,7 +37,7 @@ export const listingExternalRelations = relations(
       fields: [listingExternal.listingId],
       references: [listing.id],
     }),
-  })
+  }),
 );
 
 export const reviewRelations = relations(review, ({ one }) => ({

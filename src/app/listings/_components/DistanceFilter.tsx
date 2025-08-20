@@ -1,9 +1,9 @@
 "use client";
 
-import { useListingsSearchParams } from "~/hooks/use-listings-search-params";
 import { useEffect, useMemo, useState } from "react";
 import { Slider } from "~/components/ui/slider";
 import { Switch } from "~/components/ui/switch";
+import { useListingsSearchParams } from "~/hooks/use-listings-search-params";
 
 type UserLocation = { lat: number; lng: number } | null | false;
 
@@ -32,7 +32,7 @@ function useUserLocation(enabled: boolean) {
             lat: pos.coords.latitude,
             lng: pos.coords.longitude,
           }),
-        () => setUserLocation(false)
+        () => setUserLocation(false),
       );
     } else {
       setUserLocation(false);
@@ -44,14 +44,14 @@ function useUserLocation(enabled: boolean) {
       userLocation && typeof userLocation === "object"
         ? userLocation.lat
         : undefined,
-    [userLocation]
+    [userLocation],
   );
   const userLng = useMemo(
     () =>
       userLocation && typeof userLocation === "object"
         ? userLocation.lng
         : undefined,
-    [userLocation]
+    [userLocation],
   );
 
   return { userLocation, userLat, userLng } as const;

@@ -1,8 +1,8 @@
 "use client";
 
 import { Search as SearchIcon } from "lucide-react";
-import { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Input } from "~/components/ui/input";
 import { useListingsSearchParams } from "~/hooks/use-listings-search-params";
 

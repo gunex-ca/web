@@ -15,7 +15,7 @@ export default function ListingsLayout({
 }
 
 export const metadata: Metadata = {
-  title: "New listing • Gunex",
-  description: "Create a new listing to sell your item on Gunex.",
+  title: "New listing • GunEx",
+  description: "Create a new listing to sell your item on GunEx.",
   alternates: { canonical: "/listings/new" },
 };

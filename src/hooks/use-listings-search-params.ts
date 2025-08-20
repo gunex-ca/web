@@ -1,15 +1,15 @@
 "use client";
 
-import { createQueryParamsHook } from "./use-query-params";
 import {
-  listingsSearchParamsSchema,
   type ListingsSearchParams,
   getDefaultListingsSearchParams,
+  listingsSearchParamsSchema,
 } from "./listings-search-params-schema";
+import { createQueryParamsHook } from "./use-query-params";
 
 // Create the typed hook for client-side usage
 export const useListingsSearchParams = createQueryParamsHook(
-  listingsSearchParamsSchema
+  listingsSearchParamsSchema,
 );
 
 // Re-export types and server-safe utilities

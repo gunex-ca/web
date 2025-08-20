@@ -1,29 +1,29 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Sign in • Gunex",
-  description: "Sign in to your Gunex account.",
+  title: "Sign in • GunEx",
+  description: "Sign in to your GunEx account.",
   robots: { index: false, follow: true },
   alternates: { canonical: "/sign-in" },
   openGraph: {
-    title: "Sign in • Gunex",
-    description: "Sign in to your Gunex account.",
+    title: "Sign in • GunEx",
+    description: "Sign in to your GunEx account.",
     url: "/sign-in",
     type: "website",
-    siteName: "Gunex",
+    siteName: "GunEx",
     images: [
       {
         url: "/og/sign-in.png",
         width: 1200,
         height: 630,
-        alt: "Sign in • Gunex",
+        alt: "Sign in • GunEx",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Sign in • Gunex",
-    description: "Sign in to your Gunex account.",
+    title: "Sign in • GunEx",
+    description: "Sign in to your GunEx account.",
     images: ["/og/sign-in.png"],
   },
 };
