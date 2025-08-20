@@ -61,12 +61,12 @@ export const FirearmsGunCreateForm: React.FC<{
 
   const models = useMemo(
     () => guns.filter((g) => g.manufacturer === state.properties.manufacturer),
-    [state.properties.manufacturer]
+    [state.properties.manufacturer],
   );
 
   const model = useMemo(
     () => models.find((m) => m.model === state.properties.model),
-    [state.properties.model, models]
+    [state.properties.model, models],
   );
 
   return (

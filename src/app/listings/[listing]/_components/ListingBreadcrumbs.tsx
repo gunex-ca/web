@@ -15,10 +15,6 @@ export const ListingBreadcrumbs: FC<{ subCategory: Subcategory }> = ({
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="/">Home</BreadcrumbLink>
-        </BreadcrumbItem>
-        <BreadcrumbSeparator />
-        <BreadcrumbItem>
           <BreadcrumbLink href="/listings">
             {subCategory.parent.name}
           </BreadcrumbLink>

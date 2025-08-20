@@ -12,7 +12,7 @@ import { auth } from "~/lib/auth";
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "~/server/db";
 import * as schema from "~/server/db/schema";
-import { LocationMapClient } from "../(search)/listings/[listing]/_components/LocationMapClient";
+import { LocationMapClient } from "../listings/[listing]/_components/LocationMapClient";
 import { EditMemberInfoForm, EditProfileForm } from "./_components/ProfileForm";
 
 export default async function ProfilePage() {

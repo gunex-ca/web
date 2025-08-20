@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { and, eq } from "drizzle-orm";
-import { z } from "zod";
 import { v4 as uuidv4 } from "uuid";
+import { z } from "zod";
 import {
   createTRPCRouter,
   protectedProcedure,
@@ -23,8 +23,8 @@ const createListingInputSchema = listingInsertSchema.omit({
 });
 
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
-import { s3 } from "~/server/s3";
 import { env } from "~/env";
+import { s3 } from "~/server/s3";
 
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10MB
 const IMAGE_EXPIRATION_SECONDS = 60 * 15; // 15 minutes
@@ -46,7 +46,7 @@ export const listingRouter = createTRPCRouter({
     .input(
       z.object({
         publicId: z.string().min(1),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Fetch listing with images for validation
@@ -54,7 +54,7 @@ export const listingRouter = createTRPCRouter({
         where: (listing, { and, eq }) =>
           and(
             eq(listing.publicId, input.publicId),
-            eq(listing.sellerId, ctx.session.user.id)
+            eq(listing.sellerId, ctx.session.user.id),
           ),
         with: { images: true },
       });
@@ -92,8 +92,8 @@ export const listingRouter = createTRPCRouter({
         .where(
           and(
             eq(schema.listing.publicId, input.publicId),
-            eq(schema.listing.sellerId, ctx.session.user.id)
-          )
+            eq(schema.listing.sellerId, ctx.session.user.id),
+          ),
         )
         .returning();
 
@@ -124,11 +124,11 @@ export const listingRouter = createTRPCRouter({
         alt: z.string().min(1),
         listingId: z.string().min(1),
         sortOrder: z.number(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const id = uuidv4();
-      const objectKey = `raw/${id}`;
+      const objectKey = `${env.NODE_ENV}/raw/${id}`;
       const image = await ctx.db
         .insert(schema.listingImage)
         .values({ ...input, id, status: "pending", objectKey })

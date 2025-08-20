@@ -1,14 +1,14 @@
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import type { FilePondFile, FilePondInitialFile } from "filepond/types";
+import { useCallback, useRef } from "react";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { useCallback, useRef } from "react";
-import type { FilePondFile, FilePondInitialFile } from "filepond/types";
 
+import { Required } from "~/components/Required";
+import { cn } from "~/components/utils";
 import { useListingForm } from "./ListingState";
 import { ImageUploader } from "./inputs/ImageUploader";
-import { cn } from "~/components/utils";
-import { Required } from "~/components/Required";
 
 export const GeneralForm: React.FC<{
   errors?: {
@@ -32,7 +32,7 @@ export const GeneralForm: React.FC<{
         update({ description: content });
       }, 500);
     },
-    [update, onClearError]
+    [update, onClearError],
   );
 
   const editor = useEditor({
@@ -116,7 +116,7 @@ export const GeneralForm: React.FC<{
             "flex h-[250px] w-full flex-col rounded-md border shadow-xs min-data-[orientation=vertical]:h-72",
             "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
             "rounded-md shadow-xs dark:bg-input/30",
-            errors.description ? "border-destructive" : "border-input"
+            errors.description ? "border-destructive" : "border-input",
           )}
         />
         {errors.description && (

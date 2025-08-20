@@ -3,7 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { List, Locate, MessageCircleMore } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { StarRating } from "~/app/(search)/listings/[listing]/_components/SellersSection";
+import { StarRating } from "~/app/listings/[listing]/_components/SellersSection";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/components/utils";
 import { findPostalCode } from "~/lib/location/postal-codes";

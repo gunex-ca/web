@@ -2,24 +2,24 @@
 
 import { capitalCase } from "change-case";
 import dynamic from "next/dynamic";
-import { DescriptionSection } from "~/app/(search)/listings/[listing]/_components/DescriptionSection";
-import { DetailsSection } from "~/app/(search)/listings/[listing]/_components/DetailsSection";
-import { ImageCarousel } from "~/app/(search)/listings/[listing]/_components/ImageCarousel";
-import { ListingBreadcrumbs } from "~/app/(search)/listings/[listing]/_components/ListingBreadcrumbs";
-import { MetaRow } from "~/app/(search)/listings/[listing]/_components/MetaRow";
-import { PriceSection } from "~/app/(search)/listings/[listing]/_components/PriceSection";
-import { SellerSection } from "~/app/(search)/listings/[listing]/_components/SellersSection";
-import { TitleSection } from "~/app/(search)/listings/[listing]/_components/TitleSection";
+import { DescriptionSection } from "~/app/listings/[listing]/_components/DescriptionSection";
+import { DetailsSection } from "~/app/listings/[listing]/_components/DetailsSection";
+import { ImageCarousel } from "~/app/listings/[listing]/_components/ImageCarousel";
+import { ListingBreadcrumbs } from "~/app/listings/[listing]/_components/ListingBreadcrumbs";
+import { MetaRow } from "~/app/listings/[listing]/_components/MetaRow";
+import { PriceSection } from "~/app/listings/[listing]/_components/PriceSection";
+import { SellerSection } from "~/app/listings/[listing]/_components/SellersSection";
+import { TitleSection } from "~/app/listings/[listing]/_components/TitleSection";
+import { cn } from "~/components/utils";
 import { CATEGORY } from "~/lib/categories";
 import { useListingForm } from "./ListingState";
-import { cn } from "~/components/utils";
 
 const LocationMap = dynamic(
   () =>
-    import("~/app/(search)/listings/[listing]/_components/LocationMap").then(
-      (mod) => mod.LocationMap
+    import("~/app/listings/[listing]/_components/LocationMap").then(
+      (mod) => mod.LocationMap,
     ),
-  { ssr: false }
+  { ssr: false },
 );
 
 export const Preview: React.FC = () => {
@@ -39,7 +39,7 @@ export const Preview: React.FC = () => {
       <ImageCarousel
         className={cn(
           "roduned-t-md h-[calc(50vh-60px)] min-h-[200px] w-full rounded-b-none",
-          images.length === 0 && "border-b"
+          images.length === 0 && "border-b",
         )}
         images={imageUrls}
       />

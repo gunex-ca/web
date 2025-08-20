@@ -28,7 +28,7 @@ export function ImageCarousel({ images, className }: ImageCarouselProps) {
   const goPrev = React.useCallback(() => {
     setCurrentIndex(
       (prev) =>
-        (((prev - 1 + imageCount) % imageCount) + imageCount) % imageCount
+        (((prev - 1 + imageCount) % imageCount) + imageCount) % imageCount,
     );
   }, [imageCount]);
   const goNext = React.useCallback(() => {
@@ -54,7 +54,7 @@ export function ImageCarousel({ images, className }: ImageCarouselProps) {
       <div
         className={cn(
           "relative grid h-full w-full grid-rows-[1fr_auto] gap-2 overflow-hidden rounded-l-md",
-          className
+          className,
         )}
       >
         <div className="flex items-center justify-center">
@@ -71,8 +71,8 @@ export function ImageCarousel({ images, className }: ImageCarouselProps) {
   return (
     <div
       className={cn(
-        "relative grid h-full w-full grid-rows-[1fr_auto] gap-2 overflow-hidden rounded-l-md",
-        className
+        "relative grid h-full w-full grid-rows-[1fr_auto] gap-2 overflow-hidden rounded-md",
+        className,
       )}
     >
       <img
@@ -86,7 +86,7 @@ export function ImageCarousel({ images, className }: ImageCarouselProps) {
         <img
           src={current}
           alt={"Listing display"}
-          className="z-10 h-full w-full rounded object-contain shadow-lg"
+          className="z-10 h-full w-full object-contain shadow-lg"
         />
 
         {imageCount > 1 && (
@@ -153,7 +153,7 @@ export function ImageCarousel({ images, className }: ImageCarouselProps) {
                   "relative mt-2 h-16 w-24 shrink-0 overflow-hidden rounded border transition-all",
                   isActive
                     ? "ring-2 ring-primary ring-offset-2"
-                    : "opacity-80 hover:opacity-100"
+                    : "opacity-80 hover:opacity-100",
                 )}
                 aria-current={isActive ? "true" : undefined}
                 aria-label={`Go to image ${index + 1}`}

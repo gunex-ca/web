@@ -21,7 +21,7 @@ export const ImageUploader: React.FC<{
         maxFiles={9}
         onupdatefiles={async (files) => {
           const rawFiles = await Promise.all(
-            files.map(async (item) => item.file as File)
+            files.map(async (item) => item.file as File),
           );
           onUpdate?.(rawFiles);
         }}

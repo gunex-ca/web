@@ -11,8 +11,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { StarRating } from "~/app/(search)/listings/[listing]/_components/SellersSection";
 import Navbar from "~/app/_components/Navbar";
+import { StarRating } from "~/app/listings/[listing]/_components/SellersSection";
 import { Button } from "~/components/ui/button";
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "~/server/db";

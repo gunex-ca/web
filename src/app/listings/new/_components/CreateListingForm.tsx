@@ -1,22 +1,22 @@
 "use client";
 
+import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import imageCompression from "browser-image-compression";
+import { isPresent } from "ts-is-present";
 import { Button } from "~/components/ui/button";
 import { api } from "~/trpc/react";
-import { isPresent } from "ts-is-present";
 
-import { GeneralForm } from "./GeneralForm";
-import { BowForm, BOW_REQUIRED_FIELDS } from "./properties/BowForm";
-import {
-  FirearmsGunCreateForm,
-  FIREARMS_REQUIRED_FIELDS,
-} from "./properties/FirearmsForm";
-import { AmmoForm, AMMO_REQUIRED_FIELDS } from "./properties/LiveAmmoForm";
-import { useListingForm, type ListingFormState } from "./ListingState";
 import { capitalCase } from "change-case";
+import { GeneralForm } from "./GeneralForm";
+import { type ListingFormState, useListingForm } from "./ListingState";
+import { BOW_REQUIRED_FIELDS, BowForm } from "./properties/BowForm";
+import {
+  FIREARMS_REQUIRED_FIELDS,
+  FirearmsGunCreateForm,
+} from "./properties/FirearmsForm";
+import { AMMO_REQUIRED_FIELDS, AmmoForm } from "./properties/LiveAmmoForm";
 
 const categoryForms = {
   "firearms-muzzleloaders": FirearmsGunCreateForm,
@@ -29,7 +29,7 @@ const categoryForms = {
 } as const;
 
 const getRequiredPropertiesFields = (
-  subCategoryId: string
+  subCategoryId: string,
 ): readonly string[] => {
   switch (subCategoryId) {
     case "firearms-muzzleloaders":
@@ -75,7 +75,7 @@ type GetPresignedPostMutation = ReturnType<
 // Validation function
 const validateFormData = (
   state: ListingFormState,
-  subCategoryId: string
+  subCategoryId: string,
 ): FormErrors => {
   const errors: FormErrors = {};
 
@@ -137,7 +137,7 @@ const compressImage = async (file: File): Promise<File> => {
 
 const uploadImageToS3 = async (
   file: File,
-  presignedPost: { url: string; fields: Record<string, string> }
+  presignedPost: { url: string; fields: Record<string, string> },
 ): Promise<void> => {
   const formData = new FormData();
 
@@ -177,7 +177,7 @@ const isImage = (file: File): boolean => {
 const handleImageUploads = async (
   listingId: string,
   images: Array<File>,
-  getPresignedPostMutation: GetPresignedPostMutation
+  getPresignedPostMutation: GetPresignedPostMutation,
 ): Promise<void> => {
   for (const [index, image] of images.entries()) {
     if (!isImage(image))
@@ -199,7 +199,7 @@ const handleImageUploads = async (
       throw new Error(
         `Failed to upload image ${index + 1}: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     }
 
@@ -216,7 +216,7 @@ const createAndPublishListing = async (
   createListingMutation: CreateListingMutation,
   publishListingMutation: PublishListingMutation,
   getPresignedPostMutation: GetPresignedPostMutation,
-  setUploadStatus: (status: string) => void
+  setUploadStatus: (status: string) => void,
 ) => {
   const compressedFiles = await Promise.all(state.images.map(compressImage));
 
@@ -275,6 +275,8 @@ export const CreateListingForm: React.FC<{ subCategoryId: string }> = ({
 
     setIsSubmitting(true);
 
+    console.log(state);
+
     try {
       const listing = await createAndPublishListing(
         state,
@@ -282,7 +284,7 @@ export const CreateListingForm: React.FC<{ subCategoryId: string }> = ({
         createListingMutation,
         publishListingMutation,
         getPresignedPostMutation,
-        setUploadStatus
+        setUploadStatus,
       );
 
       toast.success("Listing created and published successfully!");

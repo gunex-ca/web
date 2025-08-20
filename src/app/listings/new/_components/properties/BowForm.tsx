@@ -1,3 +1,4 @@
+import { Required } from "~/components/Required";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
@@ -7,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Required } from "~/components/Required";
 import { useListingForm } from "../ListingState";
 import { ConditionInput } from "../inputs/ConditionInput";
 import { useMount } from "./use-mount";

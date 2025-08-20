@@ -5,7 +5,7 @@ import type { FC } from "react";
 
 const LocationMapComponent = dynamic(
   () => import("./LocationMap").then((mod) => mod.LocationMap),
-  { ssr: false }
+  { ssr: false },
 );
 
 export const LocationMapClient: FC<{ lat: number; lng: number }> = ({
