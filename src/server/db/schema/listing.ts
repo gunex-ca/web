@@ -95,7 +95,7 @@ export const listing = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
 
-    category: categoryEnum("category").notNull(),
+    subCategoryId: text("sub_category_id").notNull(),
     title: varchar("title", { length: 255 }).notNull(),
     description: text("description"),
 
@@ -115,11 +115,11 @@ export const listing = pgTable(
   },
   (table) => [
     index("listings_seller_id_idx").on(table.sellerId),
-    index("listings_category_idx").on(table.category),
+    index("listings_category_idx").on(table.subCategoryId),
     index("listings_status_idx").on(table.status),
     index("listings_price_idx").on(table.price),
     uniqueIndex("listings_public_id_uk").on(table.publicId),
-  ],
+  ]
 );
 
 export type ListingInsert = InferInsertModel<typeof listing>;
@@ -146,8 +146,14 @@ export const listingView = pgTable(
   (table) => [
     index("listing_view_listing_id_idx").on(table.listingId),
     index("listing_view_viewer_id_idx").on(table.viewerId),
-  ],
+  ]
 );
+
+export const listingImageStatusEnum = pgEnum("listing_image_status", [
+  "pending",
+  "uploaded",
+  "rejected",
+]);
 
 // Listing images
 export const listingImage = pgTable(
@@ -157,12 +163,13 @@ export const listingImage = pgTable(
     listingId: uuid("listing_id")
       .notNull()
       .references(() => listing.id, { onDelete: "cascade" }),
-    url: varchar("url", { length: 2048 }).notNull(),
+    objectKey: varchar("object_key", { length: 255 }).notNull(),
     alt: varchar("alt", { length: 255 }),
     sortOrder: integer("sort_order").default(0).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
+    status: listingImageStatusEnum("status").notNull(),
   },
-  (table) => [index("listing_images_listing_id_idx").on(table.listingId)],
+  (table) => [index("listing_images_listing_id_idx").on(table.listingId)]
 );
 
 // Cross-post/external references
@@ -188,9 +195,9 @@ export const listingExternal = pgTable(
     index("listing_external_platform_idx").on(table.platform),
     uniqueIndex("listing_external_platform_external_id_uk").on(
       table.platform,
-      table.externalId,
+      table.externalId
     ),
-  ],
+  ]
 );
 
 // Favorites (wishlists)
@@ -208,7 +215,7 @@ export const favorite = pgTable(
   },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
-  ],
+  ]
 );
 
 // Messages (simple listing-based messaging)
@@ -233,7 +240,7 @@ export const message = pgTable(
     index("messages_listing_id_idx").on(table.listingId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_receiver_id_idx").on(table.receiverId),
-  ],
+  ]
 );
 
 export const listingReport = pgTable(
@@ -252,5 +259,5 @@ export const listingReport = pgTable(
     reason: text("reason").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (table) => [index("reports_reporter_id_idx").on(table.reporterId)],
+  (table) => [index("reports_reporter_id_idx").on(table.reporterId)]
 );

@@ -5,14 +5,21 @@ import { ComboBox } from "../inputs/ComboBox";
 import { useMount } from "./use-mount";
 
 type AmmoFormProperties = {
-  Caliber: string;
+  caliber: string;
 };
 
 const defaultProperties: AmmoFormProperties = {
-  Caliber: "",
+  caliber: "",
 };
 
-export const AmmoForm: React.FC = () => {
+export const AMMO_REQUIRED_FIELDS = [
+  // Currently no required fields for ammo
+] as const;
+
+export const AmmoForm: React.FC<{
+  errors?: Record<string, string>;
+  onClearError?: (field: string) => void;
+}> = ({ errors = {}, onClearError }) => {
   const { state, update } = useListingForm<AmmoFormProperties>();
 
   useMount(() => {
@@ -24,15 +31,18 @@ export const AmmoForm: React.FC = () => {
       <div className="space-y-2">
         <Label>Caliber</Label>
         <ComboBox
-          value={String(state.properties.Caliber ?? "")}
+          value={String(state.properties.caliber ?? "")}
           onChange={(e) => {
-            update({ properties: { ...state.properties, Caliber: e } });
+            update({ properties: { ...state.properties, caliber: e } });
           }}
           options={[
             { label: "(Other)", value: "Other" },
             ...calibers.map((a) => ({ label: a, value: a })),
           ]}
         />
+        {errors.caliber && (
+          <p className="text-destructive text-sm">{errors.caliber}</p>
+        )}
       </div>
     </div>
   );

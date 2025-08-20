@@ -19,28 +19,40 @@ import {
 import { useMount } from "./use-mount";
 
 type FirearmsFormProperties = {
-  Condition: string;
-  Caliber: string;
-  Manufacturer: string;
-  Model: string;
-  Action: string;
-  Classification: string;
-  Handed: string;
-  Sights: string;
+  condition: string;
+  caliber: string;
+  manufacturer: string;
+  model: string;
+  action: string;
+  classification: string;
+  handed: string;
+  sights: string;
 };
 
 const defaultProperties: FirearmsFormProperties = {
-  Condition: "",
-  Caliber: "",
-  Manufacturer: "",
-  Model: "",
-  Action: "",
-  Classification: "",
-  Handed: "",
-  Sights: "",
+  condition: "",
+  caliber: "",
+  manufacturer: "",
+  model: "",
+  action: "",
+  classification: "",
+  handed: "",
+  sights: "",
 };
 
-export const FirearmsGunCreateForm: React.FC = () => {
+export const FIREARMS_REQUIRED_FIELDS = [
+  "condition",
+  "manufacturer",
+  "model",
+  "action",
+  "classification",
+  "caliber",
+] as const;
+
+export const FirearmsGunCreateForm: React.FC<{
+  errors?: Record<string, string>;
+  onClearError?: (field: string) => void;
+}> = ({ errors = {}, onClearError }) => {
   const { state, update } = useListingForm<FirearmsFormProperties>();
 
   useMount(() => {
@@ -48,13 +60,13 @@ export const FirearmsGunCreateForm: React.FC = () => {
   });
 
   const models = useMemo(
-    () => guns.filter((g) => g.manufacturer === state.properties.Manufacturer),
-    [state.properties.Manufacturer],
+    () => guns.filter((g) => g.manufacturer === state.properties.manufacturer),
+    [state.properties.manufacturer]
   );
 
   const model = useMemo(
-    () => models.find((m) => m.model === state.properties.Model),
-    [state.properties.Model, models],
+    () => models.find((m) => m.model === state.properties.model),
+    [state.properties.model, models]
   );
 
   return (
@@ -64,11 +76,15 @@ export const FirearmsGunCreateForm: React.FC = () => {
           Condition <Required />
         </Label>
         <ConditionInput
-          value={String(state.properties.Condition ?? "")}
+          value={String(state.properties.condition ?? "")}
           onChange={(e) => {
-            update({ properties: { ...state.properties, Condition: e } });
+            update({ properties: { ...state.properties, condition: e } });
+            onClearError?.("condition");
           }}
         />
+        {errors.condition && (
+          <p className="text-destructive text-sm">{errors.condition}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -76,21 +92,25 @@ export const FirearmsGunCreateForm: React.FC = () => {
           Manufacturer <Required />
         </Label>
         <FirearmsManufacturerInput
-          value={String(state.properties.Manufacturer ?? "")}
+          value={String(state.properties.manufacturer ?? "")}
           onChange={(e) => {
             if (e === "Other") {
               update({
                 properties: {
                   ...state.properties,
-                  Manufacturer: e,
-                  Model: "Other",
+                  manufacturer: e,
+                  model: "Other",
                 },
               });
-              return;
+            } else {
+              update({ properties: { ...state.properties, manufacturer: e } });
             }
-            update({ properties: { ...state.properties, Manufacturer: e } });
+            onClearError?.("manufacturer");
           }}
         />
+        {errors.manufacturer && (
+          <p className="text-destructive text-sm">{errors.manufacturer}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -98,33 +118,37 @@ export const FirearmsGunCreateForm: React.FC = () => {
           Model <Required />
         </Label>
         <FirearmsManufacturerModelInput
-          manufacturer={String(state.properties.Manufacturer ?? "")}
-          value={String(state.properties.Model ?? "")}
+          manufacturer={String(state.properties.manufacturer ?? "")}
+          value={String(state.properties.model ?? "")}
           onChange={(e) => {
             const model = models.find((m) => m.model === e);
             if (e === "Other") {
               update({
                 properties: {
                   ...state.properties,
-                  Model: e,
-                  Action: "",
-                  Classification: "",
-                  Caliber: "",
+                  model: e,
+                  action: "",
+                  classification: "",
+                  caliber: "",
                 },
               });
-              return;
+            } else {
+              update({
+                properties: {
+                  ...state.properties,
+                  model: model?.model ?? e,
+                  action: model?.action ?? "",
+                  classification: model?.legal_class ?? "",
+                  caliber: model?.calibres[0] ?? "Other",
+                },
+              });
             }
-            update({
-              properties: {
-                ...state.properties,
-                Model: model?.model ?? e,
-                Action: model?.action ?? "",
-                Classification: model?.legal_class ?? "",
-                Caliber: model?.calibres[0] ?? "Other",
-              },
-            });
+            onClearError?.("model");
           }}
         />
+        {errors.model && (
+          <p className="text-destructive text-sm">{errors.model}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -132,13 +156,17 @@ export const FirearmsGunCreateForm: React.FC = () => {
           Action <Required />
         </Label>
         <ComboBox
-          value={String(state.properties.Action ?? "")}
+          value={String(state.properties.action ?? "")}
           suggestions={model?.action ? [model.action] : []}
           onChange={(e) => {
-            update({ properties: { ...state.properties, Action: e } });
+            update({ properties: { ...state.properties, action: e } });
+            onClearError?.("action");
           }}
           options={[...actions.map((a) => ({ label: a, value: a }))]}
         />
+        {errors.action && (
+          <p className="text-destructive text-sm">{errors.action}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -146,13 +174,17 @@ export const FirearmsGunCreateForm: React.FC = () => {
           Classification <Required />
         </Label>
         <ComboBox
-          value={String(state.properties.Classification ?? "")}
+          value={String(state.properties.classification ?? "")}
           suggestions={model?.legal_class ? [model.legal_class] : []}
           onChange={(e) => {
-            update({ properties: { ...state.properties, Classification: e } });
+            update({ properties: { ...state.properties, classification: e } });
+            onClearError?.("classification");
           }}
           options={legalClasses.map((a) => ({ label: a, value: a }))}
         />
+        {errors.Classification && (
+          <p className="text-destructive text-sm">{errors.Classification}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -160,10 +192,11 @@ export const FirearmsGunCreateForm: React.FC = () => {
           Caliber <Required />
         </Label>
         <ComboBox
-          value={String(state.properties.Caliber ?? "")}
+          value={String(state.properties.caliber ?? "")}
           suggestions={model?.calibres}
           onChange={(e) => {
-            update({ properties: { ...state.properties, Caliber: e } });
+            update({ properties: { ...state.properties, caliber: e } });
+            onClearError?.("caliber");
           }}
           options={[
             { label: "(Other)", value: "other" },
@@ -171,15 +204,18 @@ export const FirearmsGunCreateForm: React.FC = () => {
             ...calibers.map((a) => ({ label: a, value: a })),
           ]}
         />
+        {errors.caliber && (
+          <p className="text-destructive text-sm">{errors.caliber}</p>
+        )}
       </div>
 
       <div className="space-y-2">
         <Label>Sights</Label>
         <Input
-          value={String(state.properties.Sights ?? "")}
+          value={String(state.properties.sights ?? "")}
           onChange={(e) => {
             update({
-              properties: { ...state.properties, Sights: e.target.value },
+              properties: { ...state.properties, sights: e.target.value },
             });
           }}
         />
@@ -188,9 +224,9 @@ export const FirearmsGunCreateForm: React.FC = () => {
       <div className="space-y-2">
         <Label>Handed</Label>
         <RadioGroup
-          value={String(state.properties.Handed ?? "")}
+          value={String(state.properties.handed ?? "")}
           onValueChange={(e) => {
-            update({ properties: { ...state.properties, Handed: e } });
+            update({ properties: { ...state.properties, handed: e } });
           }}
         >
           <div className="flex items-center gap-3">

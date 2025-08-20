@@ -3,13 +3,22 @@ import StarterKit from "@tiptap/starter-kit";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { useCallback, useRef } from "react";
+import type { FilePondFile, FilePondInitialFile } from "filepond/types";
 
 import { useListingForm } from "./ListingState";
 import { ImageUploader } from "./inputs/ImageUploader";
 import { cn } from "~/components/utils";
 import { Required } from "~/components/Required";
 
-export const GeneralForm: React.FC = () => {
+export const GeneralForm: React.FC<{
+  errors?: {
+    title?: string;
+    description?: string;
+    price?: string;
+    images?: string;
+  };
+  onClearError?: (field: "title" | "description" | "price" | "images") => void;
+}> = ({ errors = {}, onClearError }) => {
   const { state, update } = useListingForm();
 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -18,11 +27,12 @@ export const GeneralForm: React.FC = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      onClearError?.("description"); // Clear error immediately when user starts typing
       timeoutRef.current = setTimeout(() => {
         update({ description: content });
       }, 500);
     },
-    [update]
+    [update, onClearError]
   );
 
   const editor = useEditor({
@@ -41,7 +51,16 @@ export const GeneralForm: React.FC = () => {
         <Label>
           Images <Required />
         </Label>
-        <ImageUploader />
+        <ImageUploader
+          files={state.images}
+          onUpdate={(images) => {
+            update({ images });
+            onClearError?.("images");
+          }}
+        />
+        {errors.images && (
+          <p className="text-destructive text-sm">{errors.images}</p>
+        )}
       </div>
       <div className="space-y-2">
         <Label>
@@ -49,18 +68,40 @@ export const GeneralForm: React.FC = () => {
         </Label>
         <Input
           value={state.title}
-          onChange={(e) => update({ title: e.target.value })}
+          onChange={(e) => {
+            update({ title: e.target.value });
+            onClearError?.("title");
+          }}
+          className={errors.title ? "border-destructive" : ""}
         />
+        {errors.title && (
+          <p className="text-destructive text-sm">{errors.title}</p>
+        )}
       </div>
 
       <div className="space-y-2">
         <Label>
           Price <Required />
         </Label>
-        <Input
-          value={Number(state.price)}
-          onChange={(e) => update({ price: e.target.valueAsNumber })}
-        />
+        <div className="relative">
+          <span className="-translate-y-1/2 pointer-events-none absolute top-1/2 left-3 text-muted-foreground">
+            $
+          </span>
+          <Input
+            type="number"
+            value={state.price}
+            max={49_999}
+            min={0}
+            onChange={(e) => {
+              update({ price: Number(e.target.value) });
+              onClearError?.("price");
+            }}
+            className={cn("pl-8", errors.price ? "border-destructive" : "")}
+          />
+        </div>
+        {errors.price && (
+          <p className="text-destructive text-sm">{errors.price}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -71,12 +112,16 @@ export const GeneralForm: React.FC = () => {
         <EditorContent
           editor={editor}
           className={cn(
-            "pros prose-sm dark:prose-invert",
-            "flex h-[250px] w-full flex-col rounded-md border border-input shadow-xs min-data-[orientation=vertical]:h-72",
+            "prose prose-sm dark:prose-invert max-w-none",
+            "flex h-[250px] w-full flex-col rounded-md border shadow-xs min-data-[orientation=vertical]:h-72",
             "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
-            "rounded-md border border-input shadow-xs dark:bg-input/30"
+            "rounded-md shadow-xs dark:bg-input/30",
+            errors.description ? "border-destructive" : "border-input"
           )}
         />
+        {errors.description && (
+          <p className="text-destructive text-sm">{errors.description}</p>
+        )}
       </div>
     </div>
   );

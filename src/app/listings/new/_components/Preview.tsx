@@ -12,6 +12,7 @@ import { SellerSection } from "~/app/(search)/listings/[listing]/_components/Sel
 import { TitleSection } from "~/app/(search)/listings/[listing]/_components/TitleSection";
 import { CATEGORY } from "~/lib/categories";
 import { useListingForm } from "./ListingState";
+import { cn } from "~/components/utils";
 
 const LocationMap = dynamic(
   () =>
@@ -23,47 +24,24 @@ const LocationMap = dynamic(
 
 export const Preview: React.FC = () => {
   const { state } = useListingForm();
-  const images = [
-    {
-      id: "1",
-      url: "https://picsum.photos/id/1011/1200/900",
-      alt: "Rifle on table",
-      sortOrder: 0,
-    },
-    {
-      id: "2",
-      url: "https://picsum.photos/id/1015/600/900",
-      alt: "Scope close-up (portrait)",
-      sortOrder: 1,
-    },
-    {
-      id: "3",
-      url: "https://picsum.photos/id/1025/900/600",
-      alt: "Stock detail (landscape)",
-      sortOrder: 2,
-    },
-    {
-      id: "4",
-      url: "https://picsum.photos/id/1035/400/1200",
-      alt: "Vertical image",
-      sortOrder: 3,
-    },
-    {
-      id: "5",
-      url: "https://picsum.photos/id/1045/1600/400",
-      alt: "Wide panoramic image",
-      sortOrder: 4,
-    },
-  ];
+
+  // Use uploaded images from state, fallback to placeholder if no images
+  const images = state.images;
 
   const subCategory = CATEGORY[state.subCategoryId];
   if (subCategory == null || "children" in subCategory) return null;
 
+  // Convert File[] to object URLs for preview
+  const imageUrls = images.map((img) => URL.createObjectURL(img));
+
   return (
     <div className="rounded-md border">
       <ImageCarousel
-        className="roduned-t-md h-[calc(50vh-60px)] min-h-[200px] w-full rounded-b-none"
-        images={images}
+        className={cn(
+          "roduned-t-md h-[calc(50vh-60px)] min-h-[200px] w-full rounded-b-none",
+          images.length === 0 && "border-b"
+        )}
+        images={imageUrls}
       />
       <div className=" h-[calc(50vh-60px)] shrink-0 flex-col overflow-scroll">
         <div className="flex-grow space-y-4 overflow-y-scroll p-4 md:p-6">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Navbar from "../_components/Navbar";
+import { Search } from "~/components/Serach";
 
 export default function RootLayout({
   children,
@@ -7,6 +8,7 @@ export default function RootLayout({
   return (
     <>
       <Navbar />
+      <Search />
       {children}
     </>
   );

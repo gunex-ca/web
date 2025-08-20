@@ -5,13 +5,13 @@ import { createContext, useContext, useState } from "react";
 
 type BaseProperties = Record<string, string | number>;
 
-type ListingFormState<T extends BaseProperties = BaseProperties> = {
+export type ListingFormState<T extends BaseProperties = BaseProperties> = {
   title: string;
   description: string;
   price: number;
   subCategoryId: string;
   properties: T;
-  images: { id: string; url: string; alt?: string; sortOrder: number }[];
+  images: File[];
 };
 
 type ListingFormContextType = {
@@ -32,7 +32,7 @@ const defaultState: ListingFormState = {
 };
 
 const ListingFormContext = createContext<ListingFormContextType | undefined>(
-  undefined,
+  undefined
 );
 
 export const ListingFormProvider: React.FC<{

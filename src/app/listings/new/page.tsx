@@ -94,7 +94,6 @@ export default async function NewListingPage({
   const category = CATEGORY[categoryValue ?? ""];
   if (category == null) return <RenderCategoryList />;
   if ("children" in category) return <RenderCategoryList />;
-
   if (category == null) return <RenderCategoryList />;
 
   return (

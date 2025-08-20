@@ -15,7 +15,6 @@ export default async function Home() {
 
   return (
     <>
-      <Search />
       <div className="mx-auto max-w-7xl px-4">
         <div className="py-8">
           <h1 className="font-semibold text-2xl">Newest listings</h1>

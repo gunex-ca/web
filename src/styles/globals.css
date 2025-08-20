@@ -134,4 +134,12 @@
   .prose-sm p:last-child {
     margin-bottom: 0;
   }
+
+  /* Ensure prose bullet points use proper theme colors */
+  .prose ul > li::marker,
+  .prose ol > li::marker,
+  .prose-sm ul > li::marker,
+  .prose-sm ol > li::marker {
+    color: var(--foreground);
+  }
 }

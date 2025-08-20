@@ -7,23 +7,29 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
+import { Required } from "~/components/Required";
 import { useListingForm } from "../ListingState";
 import { ConditionInput } from "../inputs/ConditionInput";
 import { useMount } from "./use-mount";
 
 type BowFormProperties = {
-  Condition: string;
-  "Bow Type": string;
-  Handed: string;
+  condition: string;
+  "bow-type": string;
+  headed: string;
 };
 
 const defaultProperties: BowFormProperties = {
-  Condition: "",
-  "Bow Type": "",
-  Handed: "",
+  condition: "",
+  "bow-type": "",
+  headed: "",
 };
 
-export const BowForm: React.FC = () => {
+export const BOW_REQUIRED_FIELDS = ["Condition"] as const;
+
+export const BowForm: React.FC<{
+  errors?: Record<string, string>;
+  onClearError?: (field: string) => void;
+}> = ({ errors = {}, onClearError }) => {
   const { state, update } = useListingForm<BowFormProperties>();
 
   useMount(() => {
@@ -33,21 +39,27 @@ export const BowForm: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label>Condition</Label>
+        <Label>
+          Condition <Required />
+        </Label>
         <ConditionInput
-          value={String(state.properties.Condition ?? "")}
+          value={String(state.properties.condition ?? "")}
           onChange={(e) => {
-            update({ properties: { ...state.properties, Condition: e } });
+            update({ properties: { ...state.properties, condition: e } });
+            onClearError?.("condition");
           }}
         />
+        {errors.condition && (
+          <p className="text-destructive text-sm">{errors.condition}</p>
+        )}
       </div>
 
       <div className="space-y-2">
         <Label>Bow Type</Label>
         <Select
-          value={String(state.properties["Bow Type"] ?? "")}
+          value={String(state.properties["bow-type"] ?? "")}
           onValueChange={(e) => {
-            update({ properties: { ...state.properties, "Bow Type": e } });
+            update({ properties: { ...state.properties, "bow-type": e } });
           }}
         >
           <SelectTrigger className="w-full">
@@ -64,9 +76,9 @@ export const BowForm: React.FC = () => {
       <div className="space-y-2">
         <Label>Handed</Label>
         <RadioGroup
-          value={String(state.properties.Handed ?? "")}
+          value={String(state.properties.headed ?? "")}
           onValueChange={(e) => {
-            update({ properties: { ...state.properties, Handed: e } });
+            update({ properties: { ...state.properties, headed: e } });
           }}
         >
           <div className="flex items-center gap-3">
