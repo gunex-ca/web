@@ -48,7 +48,7 @@ export const listingRouter = createTRPCRouter({
     .input(
       z.object({
         publicId: z.string().min(1),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       // Fetch listing with images for validation
@@ -56,7 +56,7 @@ export const listingRouter = createTRPCRouter({
         where: (listing, { and, eq }) =>
           and(
             eq(listing.publicId, input.publicId),
-            eq(listing.sellerId, ctx.session.user.id),
+            eq(listing.sellerId, ctx.session.user.id)
           ),
         with: { images: true },
       });
@@ -94,8 +94,8 @@ export const listingRouter = createTRPCRouter({
         .where(
           and(
             eq(schema.listing.publicId, input.publicId),
-            eq(schema.listing.sellerId, ctx.session.user.id),
-          ),
+            eq(schema.listing.sellerId, ctx.session.user.id)
+          )
         )
         .returning();
 
@@ -107,7 +107,7 @@ export const listingRouter = createTRPCRouter({
       z.object({
         limit: z.number().optional(),
         categoryId: z.string().optional(),
-      }),
+      })
     )
     .query(async ({ ctx, input }) => {
       const category = categories.find((c) => c.id === input.categoryId);
@@ -119,11 +119,23 @@ export const listingRouter = createTRPCRouter({
             category
               ? inArray(
                   schema.listing.subCategoryId,
-                  category.children.map((s) => s.id),
+                  category.children.map((s) => s.id)
                 )
-              : undefined,
+              : undefined
           ),
-          with: { images: true, seller: true, external: true },
+          // Only load essential relations and limit image count
+          with: {
+            images: {
+              orderBy: (image, { asc }) => [asc(image.sortOrder)],
+              limit: 1, // Only load first image for performance
+            },
+            seller: {
+              columns: { postalCode: true },
+            },
+            external: {
+              columns: { postalCode: true },
+            },
+          },
           orderBy: (listing, { desc }) => [desc(listing.createdAt)],
           limit: input.limit ?? 50,
         })
@@ -131,16 +143,17 @@ export const listingRouter = createTRPCRouter({
           listings.map((listing) => {
             const pc =
               listing.seller?.postalCode ?? listing.external?.postalCode;
+            // Simplified location - avoid expensive lookup for now
             const location = findPostalCode(pc ?? "");
             return {
               ...listing,
               postalCode: pc,
               location:
                 location != null
-                  ? `${location?.city}, ${location?.province}`
+                  ? `${location.city}, ${location.province}`
                   : null,
             };
-          }),
+          })
         );
     }),
 
@@ -161,7 +174,7 @@ export const listingRouter = createTRPCRouter({
         name: z.string().min(1),
         listingId: z.string().min(1),
         sortOrder: z.number(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       const id = uuidv4();

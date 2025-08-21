@@ -3,12 +3,10 @@ from bs4 import BeautifulSoup
 from typing import TypedDict, Optional
 import re
 from datetime import datetime
-import json
 import hashlib
 from decimal import Decimal, InvalidOperation
-import os
 import pytz
-
+import time
 
 def get_gunpost_ads(url="https://www.gunpost.ca/ads", page=1):
     response = requests.get(f"{url}?page={page-1}")
@@ -102,6 +100,8 @@ conditions_map = {
 }
 
 categories_map = {
+    "Airgun & AirsoftAccessories": "airgun-airsoft-accessories",
+    "FirearmsReplicas or Deactivated": "firearms-replicas-deactivated",
     "ReloadingDies": "reloading-dies",
     "ReloadingPresses": "reloading-presses",
     "Shooting & Range GearHolsters": "shooting-range-gear-holsters",
@@ -112,6 +112,7 @@ categories_map = {
     "ReloadingTools & Accessories": "reloading-tools-accessories",
     "OpticsRifle Scopes": "optics-rifle-scopes",
     "OpticsMiscellaneous": "optics-miscellaneous",
+    "HuntingMiscellaneous": "hunting-miscellaneous",
     "OpticsLaser Sights": "optics-laser-sights",
     "ServicesGun Shows/Events": "services-gun-shows-events",
     "OpticsRed Dot / Reflex Sight": "optics-red-dot-reflex-sight",
@@ -141,8 +142,40 @@ categories_map = {
     "OpticsRings/Bases/Mounts": "optics-rings-bases-mounts",
     "Firearm Components, Accessories, & ToolsBipods": "firearm-components-accessories-tools-bipods",
     "FirearmsMuzzleloaders": "firearms-muzzleloaders",
+    "ReloadingMiscellaneous": "reloading-miscellaneous",
+    "ReloadingShotshell Reloading": "reloading-shotshell-reloading",
+    "ReloadingPowder Handling & Scales": "reloading-powder-handling-scales",
     "BooksHunting Literature": "books-hunting-literature",
+    "OpticsRange Finders": "optics-range-finders",
+    "HuntingDecoys": "hunting-decoys",
+    "Airgun & AirsoftAir Pistols": "airgun-airsoft-air-pistols",
     "Shooting & Range GearShooting Rests": "shooting-range-gear-shooting-rests",
+    "Cases & StorageSafes or Cabinets": "cases-storage-safes-cabinets",
+    "Cases & StorageAmmo Cans": "cases-storage-ammo-cans",
+    "Firearm Components, Accessories, & ToolsMiscellaneous": "firearm-components-accessories-tools-miscellaneous",
+    "Firearm Components, Accessories, & ToolsMiscellaneous": "firearm-components-accessories-tools-miscellaneous",
+    "Firearm Components, Accessories, & ToolsMuzzle Brakes & Flash Supp.": "firearm-components-accessories-tools-muzzle-brakes-flash-supp",
+    "Cases & StorageSoft Cases": "cases-storage-soft-cases",
+    "Airgun & AirsoftPellets & BBs (projectiles)": "airgun-airsoft-pellets-bb-projectiles",
+    "ServicesGun Smithing": "services-gun-smithing",
+    "Shooting & Range GearBody Armour": "shooting-range-gear-body-armour",
+    "Shooting & Range GearTac Vests & Vest Attachments": "shooting-range-gear-tac-vests-vest-attachments",
+    "HuntingBlinds": "hunting-blinds",
+    "ReloadingPrimers": "reloading-primers",
+    "HuntingClothing": "hunting-clothing",
+    "ReloadingLead Casting Tools": "reloading-lead-casting-tools",
+    "TargetsGongs": "targets-gongs",
+    "HuntingTrail Cameras": "hunting-trail-cameras",
+    "Cases & StorageLocks": "cases-storage-locks",
+    "Shooting & Range GearRange Bags": "shooting-range-gear-range-bags",
+    "TargetsArchery Targets": "targets-archery-targets",
+    "ArcheryBow Accessories": "archery-bow-accessories",
+    "BooksFirearm Literature": "books-firearm-literature",
+    "Firearm Components, Accessories, & ToolsSwivels": "firearm-components-accessories-tools-swivels",
+    "Shooting & Range GearTac Belts & Belt Attachments": "shooting-range-gear-tac-belts-belt-attachments",
+    "ArcheryArrows & Broadheads": "archery-arrows-broadheads",
+    "OpticsBinoculars/Monoculars": "optics-binoculars-monoculars",
+    "Firearm Components, Accessories, & ToolsConversion Kits (caliber change)": "firearm-components-accessories-tools-conversion-kits-caliber-change",
 }
 
 caliber = {
@@ -382,179 +415,204 @@ def map_properties(properties: dict) -> tuple[str, dict]:
 
     return category, properties_normalized
 
+def publish_ad(ad):
+    first_link = ad.find("a", href=True)
+    
+    if not (first_link and first_link['href'].startswith('/')):
+        return
 
-if __name__ == "__main__":
-    for page in range(1, 10):
+    post_date = ad.find("span", class_="node__pubdate")
+    if not post_date:
+        print(f"Failed to find post date: {post_date} -- {first_link}")
+        return
+
+    date = parse_post_date(post_date.text.strip())
+    if isinstance(date, datetime):
+        est = pytz.timezone("America/Toronto")
+        if date.tzinfo is None:
+            date = est.localize(date)
+        else:
+            date = date.astimezone(est)
+        date = date.isoformat()
+    # Print out how long ago it was posted in 1h 2s format
+    if date:
+        now = datetime.now(pytz.timezone("America/Toronto"))
+        if isinstance(date, str):
+            # Parse back to datetime if needed
+            date_dt = datetime.fromisoformat(date)
+        else:
+            date_dt = date
+        delta = now - date_dt
+        total_seconds = int(delta.total_seconds())
+
+        days, remainder = divmod(total_seconds, 86400)
+        months = 0
+        # Approximate months as 30 days
+        if days >= 30:
+            months = days // 30
+            days = days % 30
+
+        hours, remainder = divmod(remainder, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        parts = []
+        if months > 0:
+            parts.append(f"{months}mo")
+        if days > 0:
+            parts.append(f"{days}d")
+        if hours > 0:
+            parts.append(f"{hours}h")
+        if minutes > 0:
+            parts.append(f"{minutes}m")
+        if seconds > 0 or not parts:
+            parts.append(f"{seconds}s")
+
+    if not date:
+        print(f"\033[93mFailed to parse date: {first_link} -- {post_date}\033[0m")
+        return
+
+    ad_url = f"https://www.gunpost.ca{first_link['href']}"
+    response = requests.get(ad_url)
+    ad_soup = BeautifulSoup(response.text, "html.parser")
+
+    price_div = ad_soup.find("div", class_="price")
+    price = price_div.text.strip()
+
+    post_location = ad_soup.find("div", class_="post-location")
+    location = post_location.text.strip().upper()
+    postalcode = extract_postal_code(location)
+
+    title_h1 = ad_soup.find("h1", class_="node__title")
+    title = title_h1.text.strip() if title_h1 else ""
+
+    username_div = ad_soup.find("div", class_="member-name")
+    username = username_div.text.strip()
+
+    description_div = ad_soup.find("div", class_="body")
+    description = description_div.find("div", class_="field__item")
+
+    properties = {}
+    details = ad_soup.find_all("div", class_="firearm-details")
+    # Parse firearm details into properties dictionary
+    for detail in details:
+        dl = detail.find("dl")
+        if not dl:
+            continue
+        dt_tags = dl.find_all("dt")
+        for dt in dt_tags:
+            key = dt.get_text(strip=True)
+            dd = dt.find_next_sibling("dd")
+            if not dd:
+                continue
+            # If dd contains a div.field__item-wrapper, extract its text, else use dd's text
+            item_wrapper = dd.find("span", class_="field__item-wrapper")
+            if item_wrapper:
+                value = item_wrapper.get_text(strip=True)
+            else:
+                # Remove any <i> tags (like the angle-right icon)
+                for i_tag in dd.find_all("i"):
+                    i_tag.decompose()
+                value = dd.get_text(strip=True)
+            properties[key] = value
+
+    rating_div = ad_soup.find('div', class_='rating')
+    user_rating = 0.0
+    user_reviews = 0
+    if rating_div:
+        rating_text = rating_div.get_text(strip=True)
+        parts = rating_text.split(' ')
+        if len(parts) == 2:
+            try:
+                user_rating = float(parts[0])
+                user_reviews = int(parts[1].replace('(', '').replace(')', ''))
+            except ValueError:
+                pass
+
+
+    sidebar = ad_soup.find("div", id="rid-sidebar-first")
+    first_sidebar_div = sidebar.find("div") if sidebar else None
+    image_tags = first_sidebar_div.find_all("img")
+    image_urls = []
+    for img in image_tags:
+        src = img.get("src")
+        if src and src.strip() and src.strip().startswith('https://media.gunpost.ca/prod'):
+
+            if "dad_square" in src:
+                src = src.replace("dad_square", "dad_large")
+            image_urls.append(src.strip())
+
+    category, properties_normalized = map_properties(properties)
+
+    price_value = parse_price_to_int(price)
+    if price_value is None:
+        if price == "Wanted":
+            return
+        if price == "Call for Price":
+            return
+        if price == "Swap / Trade":
+            return
+
+        print(f"\033[93mFailed to parse price: {price} -- {ad_url}\033[0m")
+        return
+
+    gunpost_ad = [{
+        "title": title,
+        "price": price_value,
+        "createdAt": str(date),
+        "description": str(description),
+        "properties": properties_normalized,
+        "subCategoryId": category,
+        "external": {
+            "postalCode": postalcode,
+            "url": ad_url,
+            "platform": "gunpost",
+            "externalId": hashlib.md5(ad_url.encode("utf-8")).hexdigest(),
+            "imageUrls": image_urls,
+            "sellerUsername": username,
+            "sellerRating": user_rating,
+            "sellerReviews": user_reviews,
+        }
+    }]
+
+    try:
+        response = requests.post(
+            "http://localhost:3000/api/v1/external-listings",
+            json=gunpost_ad,
+            timeout=10
+        )
+        print(f"Processed {title[:30]}... -- {response.status_code}  -- {ad_url}")
+        try:
+            response_json = response.json()
+            # print("Parsed JSON response:")
+            # print(json.dumps(response_json, indent=2, ensure_ascii=False))
+        except Exception as e:
+            print(f"Failed to parse response as JSON: {e}")
+    except Exception as e:
+        print(f"Failed to send POST request: {e}")
+
+
+import concurrent.futures
+
+def main(pages=50):
+    for page in range(1, pages + 1):
         ads = get_gunpost_ads(page=page)
         print(f"\033[91mPage: {page}\033[0m")
-        for ad in ads:
-            first_link = ad.find("a", href=True)
-            
-            if not (first_link and first_link['href'].startswith('/')):
-                continue
-
-            post_date = ad.find("span", class_="node__pubdate")
-            if not post_date:
-                print(f"Failed to find post date: {post_date} -- {first_link}")
-                continue
-
-            date = parse_post_date(post_date.text.strip())
-            if isinstance(date, datetime):
-                
-                est = pytz.timezone("America/Toronto")
-                if date.tzinfo is None:
-                    date = est.localize(date)
-                else:
-                    date = date.astimezone(est)
-                date = date.isoformat()
-            # Print out how long ago it was posted in 1h 2s format
-            if date:
-                now = datetime.now(pytz.timezone("America/Toronto"))
-                if isinstance(date, str):
-                    # Parse back to datetime if needed
-                    date_dt = datetime.fromisoformat(date)
-                else:
-                    date_dt = date
-                delta = now - date_dt
-                total_seconds = int(delta.total_seconds())
-
-                days, remainder = divmod(total_seconds, 86400)
-                months = 0
-                # Approximate months as 30 days
-                if days >= 30:
-                    months = days // 30
-                    days = days % 30
-
-                hours, remainder = divmod(remainder, 3600)
-                minutes, seconds = divmod(remainder, 60)
-                parts = []
-                if months > 0:
-                    parts.append(f"{months}mo")
-                if days > 0:
-                    parts.append(f"{days}d")
-                if hours > 0:
-                    parts.append(f"{hours}h")
-                if minutes > 0:
-                    parts.append(f"{minutes}m")
-                if seconds > 0 or not parts:
-                    parts.append(f"{seconds}s")
-                print(f"Posted {', '.join(parts)} ago")
-
-            if not date:
-                print(f"\033[93mFailed to parse date: {first_link} -- {post_date}\033[0m")
-                continue
-
-            ad_url = f"https://www.gunpost.ca{first_link['href']}"
-            response = requests.get(ad_url)
-            ad_soup = BeautifulSoup(response.text, "html.parser")
-
-            price_div = ad_soup.find("div", class_="price")
-            price = price_div.text.strip()
-
-            post_location = ad_soup.find("div", class_="post-location")
-            location = post_location.text.strip().upper()
-            postalcode = extract_postal_code(location)
-
-            title_h1 = ad_soup.find("h1", class_="node__title")
-            title = title_h1.text.strip() if title_h1 else ""
-
-            username_div = ad_soup.find("div", class_="member-name")
-            username = username_div.text.strip()
-
-            description_div = ad_soup.find("div", class_="body")
-            description = description_div.find("div", class_="field__item")
-
-            properties = {}
-            details = ad_soup.find_all("div", class_="firearm-details")
-            # Parse firearm details into properties dictionary
-            for detail in details:
-                dl = detail.find("dl")
-                if not dl:
-                    continue
-                dt_tags = dl.find_all("dt")
-                for dt in dt_tags:
-                    key = dt.get_text(strip=True)
-                    dd = dt.find_next_sibling("dd")
-                    if not dd:
-                        continue
-                    # If dd contains a div.field__item-wrapper, extract its text, else use dd's text
-                    item_wrapper = dd.find("span", class_="field__item-wrapper")
-                    if item_wrapper:
-                        value = item_wrapper.get_text(strip=True)
-                    else:
-                        # Remove any <i> tags (like the angle-right icon)
-                        for i_tag in dd.find_all("i"):
-                            i_tag.decompose()
-                        value = dd.get_text(strip=True)
-                    properties[key] = value
-
-            rating_div = ad_soup.find('div', class_='rating')
-            user_rating = 0.0
-            user_reviews = 0
-            if rating_div:
-                rating_text = rating_div.get_text(strip=True)
-                parts = rating_text.split(' ')
-                if len(parts) == 2:
-                    try:
-                        user_rating = float(parts[0])
-                        user_reviews = int(parts[1].replace('(', '').replace(')', ''))
-                    except ValueError:
-                        pass
-
-
-            sidebar = ad_soup.find("div", id="rid-sidebar-first")
-            first_sidebar_div = sidebar.find("div") if sidebar else None
-            image_tags = first_sidebar_div.find_all("img")
-            image_urls = []
-            for img in image_tags:
-                src = img.get("src")
-                if src and src.strip() and src.strip().startswith('https://media.gunpost.ca/prod'):
-
-                    if "dad_square" in src:
-                        src = src.replace("dad_square", "dad_large")
-                    image_urls.append(src.strip())
-
-            category, properties_normalized = map_properties(properties)
-
-            price_value = parse_price_to_int(price)
-            if price_value is None:
-                print(f"\033[93mFailed to parse price: {price} -- {ad_url}\033[0m")
-                print("-"*100)
-                continue
-
-            gunpost_ad = [{
-                "title": title,
-                "price": price_value,
-                "createdAt": str(date),
-                "description": str(description),
-                "properties": properties_normalized,
-                "subCategoryId": category,
-                "external": {
-                    "postalCode": postalcode,
-                    "url": ad_url,
-                    "platform": "gunpost",
-                    "externalId": hashlib.md5(ad_url.encode("utf-8")).hexdigest(),
-                    "imageUrls": image_urls,
-                    "sellerUsername": username,
-                    "sellerRating": user_rating,
-                    "sellerReviews": user_reviews,
-                }
-            }]
-
-            try:
-                response = requests.post(
-                    "http://localhost:3000/api/v1/external-listings",
-                    json=gunpost_ad,
-                    timeout=10
-                )
-                print(gunpost_ad[0]["title"])
-                print(f"POST response status: {response.status_code}")
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            futures = [executor.submit(publish_ad, ad) for ad in ads]
+            for future in concurrent.futures.as_completed(futures):
+                # Optionally handle exceptions here
                 try:
-                    response_json = response.json()
-                    # print("Parsed JSON response:")
-                    # print(json.dumps(response_json, indent=2, ensure_ascii=False))
+                    future.result()
                 except Exception as e:
-                    print(f"Failed to parse response as JSON: {e}")
-            except Exception as e:
-                print(f"Failed to send POST request: {e}")
-            print("-"*100)
+                    print(f"Exception in publish_ad: {e}")
+
+if __name__ == "__main__":
+
+    total_runs = 0
+    while True:
+        total_runs += 1
+        pages = 50 if total_runs == 1 else 5
+        print("-"*100)
+        print(f"Starting new run -- {total_runs} / Reading {pages} pages --", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        print("-"*100)
+        main(pages=pages)
+        time.sleep(60)

@@ -94,16 +94,19 @@ export function getAllCities(): City[] {
 }
 
 const all = getAllPostalCodes();
+const allObj: Record<string, PostalCodeEntry> = Object.fromEntries(
+  all.flatMap((entry) => {
+    const norm = entry.postalCode.replace(/\s+/g, "").toUpperCase();
+    const prefix = norm.slice(0, 3);
+    // Map both the full code and the 3-letter prefix to the entry
+    return [
+      [norm, entry],
+      [prefix, entry],
+    ];
+  })
+);
 
 export function findPostalCode(code: string): PostalCodeEntry | undefined {
   const norm = code.replace(/\s+/g, "").toUpperCase();
-
-  if (code.length === 3)
-    return all.find((entry) =>
-      entry.postalCode.replace(/\s+/g, "").toUpperCase().startsWith(norm),
-    );
-
-  return all.find(
-    (entry) => entry.postalCode.replace(/\s+/g, "").toUpperCase() === norm,
-  );
+  return allObj[norm] ?? allObj[norm.slice(0, 3)];
 }

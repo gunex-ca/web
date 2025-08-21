@@ -2,34 +2,52 @@
 
 import imageCompression from "browser-image-compression";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import { toast } from "sonner";
-import { isPresent } from "ts-is-present";
 import { Button } from "~/components/ui/button";
+import { Skeleton } from "~/components/ui/skeleton";
 import { api } from "~/trpc/react";
 
 import { capitalCase } from "change-case";
 import { GeneralForm } from "./GeneralForm";
 import { type ListingFormState, useListingForm } from "./ListingState";
-import { BOW_REQUIRED_FIELDS, BowForm } from "./properties/BowForm";
-import {
-  FIREARMS_REQUIRED_FIELDS,
-  FirearmsGunCreateForm,
-} from "./properties/FirearmsForm";
-import { AMMO_REQUIRED_FIELDS, AmmoForm } from "./properties/LiveAmmoForm";
+
+// Import only the required fields constants, not the components
+import { BOW_REQUIRED_FIELDS } from "./properties/BowForm";
+import { FIREARMS_REQUIRED_FIELDS } from "./properties/FirearmsForm";
+import { AMMO_REQUIRED_FIELDS } from "./properties/LiveAmmoForm";
+
+// Lazy load category-specific forms
+const LazyFirearmsForm = lazy(() =>
+  import("./properties/FirearmsForm").then((module) => ({
+    default: module.FirearmsGunCreateForm,
+  }))
+);
+
+const LazyAmmoForm = lazy(() =>
+  import("./properties/LiveAmmoForm").then((module) => ({
+    default: module.AmmoForm,
+  }))
+);
+
+const LazyBowForm = lazy(() =>
+  import("./properties/BowForm").then((module) => ({
+    default: module.BowForm,
+  }))
+);
 
 const categoryForms = {
-  "firearms-muzzleloaders": FirearmsGunCreateForm,
-  "firearms-shotguns": FirearmsGunCreateForm,
-  "firearms-handguns": FirearmsGunCreateForm,
-  "firearms-rifles": FirearmsGunCreateForm,
-  "ammunition-live-ammo": AmmoForm,
-  "ammunition-dummy-rounds": AmmoForm,
-  "archery-bows": BowForm,
+  "firearms-muzzleloaders": LazyFirearmsForm,
+  "firearms-shotguns": LazyFirearmsForm,
+  "firearms-handguns": LazyFirearmsForm,
+  "firearms-rifles": LazyFirearmsForm,
+  "ammunition-live-ammo": LazyAmmoForm,
+  "ammunition-dummy-rounds": LazyAmmoForm,
+  "archery-bows": LazyBowForm,
 } as const;
 
 const getRequiredPropertiesFields = (
-  subCategoryId: string,
+  subCategoryId: string
 ): readonly string[] => {
   switch (subCategoryId) {
     case "firearms-muzzleloaders":
@@ -56,14 +74,6 @@ type FormErrors = {
   properties?: Record<string, string>;
 };
 
-type FormState = {
-  title: string;
-  description: string;
-  price: number;
-  images: Array<{ file?: File; id: string; alt?: string; url?: string }>;
-  properties: Record<string, string | number | boolean>;
-};
-
 type CreateListingMutation = ReturnType<typeof api.listing.create.useMutation>;
 type PublishListingMutation = ReturnType<
   typeof api.listing.publish.useMutation
@@ -75,7 +85,7 @@ type GetPresignedPostMutation = ReturnType<
 // Validation function
 const validateFormData = (
   state: ListingFormState,
-  subCategoryId: string,
+  subCategoryId: string
 ): FormErrors => {
   const errors: FormErrors = {};
 
@@ -137,7 +147,7 @@ const compressImage = async (file: File): Promise<File> => {
 
 const uploadImageToS3 = async (
   file: File,
-  presignedPost: { url: string; fields: Record<string, string> },
+  presignedPost: { url: string; fields: Record<string, string> }
 ): Promise<void> => {
   const formData = new FormData();
 
@@ -168,7 +178,7 @@ const isImage = (file: File): boolean => {
 const handleImageUploads = async (
   listingId: string,
   images: Array<File>,
-  getPresignedPostMutation: GetPresignedPostMutation,
+  getPresignedPostMutation: GetPresignedPostMutation
 ): Promise<void> => {
   for (const [index, image] of images.entries()) {
     if (!isImage(image))
@@ -191,7 +201,7 @@ const handleImageUploads = async (
       throw new Error(
         `Failed to upload image ${index + 1}: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`,
+        }`
       );
     }
 
@@ -208,7 +218,7 @@ const createAndPublishListing = async (
   createListingMutation: CreateListingMutation,
   publishListingMutation: PublishListingMutation,
   getPresignedPostMutation: GetPresignedPostMutation,
-  setUploadStatus: (status: string) => void,
+  setUploadStatus: (status: string) => void
 ) => {
   const compressedFiles = await Promise.all(state.images.map(compressImage));
 
@@ -276,7 +286,7 @@ export const CreateListingForm: React.FC<{ subCategoryId: string }> = ({
         createListingMutation,
         publishListingMutation,
         getPresignedPostMutation,
-        setUploadStatus,
+        setUploadStatus
       );
 
       toast.success("Listing created and published successfully!");
@@ -328,7 +338,23 @@ export const CreateListingForm: React.FC<{ subCategoryId: string }> = ({
       {Form && (
         <section className="space-y-4">
           <h3 className="font-semibold text-lg">Additional Details</h3>
-          <Form errors={errors.properties} onClearError={clearPropertyError} />
+          <Suspense
+            fallback={
+              <div className="space-y-4">
+                <Skeleton className="h-12 w-full rounded-md" />
+                <Skeleton className="h-12 w-full rounded-md" />
+                <Skeleton className="h-12 w-full rounded-md" />
+                <div className="text-muted-foreground text-sm">
+                  Loading additional form fields...
+                </div>
+              </div>
+            }
+          >
+            <Form
+              errors={errors.properties}
+              onClearError={clearPropertyError}
+            />
+          </Suspense>
         </section>
       )}
 

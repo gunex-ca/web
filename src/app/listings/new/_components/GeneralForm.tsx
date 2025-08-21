@@ -1,14 +1,25 @@
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import type { FilePondFile, FilePondInitialFile } from "filepond/types";
-import { useCallback, useRef } from "react";
+import { lazy, Suspense, useCallback } from "react";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
+import { Skeleton } from "~/components/ui/skeleton";
 
 import { Required } from "~/components/Required";
 import { cn } from "~/components/utils";
 import { useListingForm } from "./ListingState";
-import { ImageUploader } from "./inputs/ImageUploader";
+
+// Lazy load the rich text editor
+const LazyRichTextEditor = lazy(() =>
+  import("./inputs/LazyRichTextEditor").then((module) => ({
+    default: module.LazyRichTextEditor,
+  }))
+);
+
+// Lazy load the image uploader
+const LazyImageUploader = lazy(() =>
+  import("./inputs/LazyImageUploader").then((module) => ({
+    default: module.LazyImageUploader,
+  }))
+);
 
 export const GeneralForm: React.FC<{
   errors?: {
@@ -21,29 +32,13 @@ export const GeneralForm: React.FC<{
 }> = ({ errors = {}, onClearError }) => {
   const { state, update } = useListingForm();
 
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const debouncedUpdate = useCallback(
+  const handleDescriptionUpdate = useCallback(
     (content: string) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
       onClearError?.("description"); // Clear error immediately when user starts typing
-      timeoutRef.current = setTimeout(() => {
-        update({ description: content });
-      }, 500);
+      update({ description: content });
     },
-    [update, onClearError],
+    [update, onClearError]
   );
-
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: state.description,
-    immediatelyRender: false,
-    editorProps: {
-      attributes: { class: "focus:outline-none h-full px-3 py-1" },
-    },
-    onUpdate: ({ editor }) => debouncedUpdate(editor.getHTML()),
-  });
 
   return (
     <div className="space-y-4">
@@ -51,13 +46,24 @@ export const GeneralForm: React.FC<{
         <Label>
           Images <Required />
         </Label>
-        <ImageUploader
-          files={state.images}
-          onUpdate={(images) => {
-            update({ images });
-            onClearError?.("images");
-          }}
-        />
+        <Suspense
+          fallback={
+            <div className="space-y-2">
+              <Skeleton className="h-32 w-full rounded-md" />
+              <div className="text-muted-foreground text-sm">
+                Loading image uploader...
+              </div>
+            </div>
+          }
+        >
+          <LazyImageUploader
+            files={state.images}
+            onUpdate={(images) => {
+              update({ images });
+              onClearError?.("images");
+            }}
+          />
+        </Suspense>
         {errors.images && (
           <p className="text-destructive text-sm">{errors.images}</p>
         )}
@@ -109,16 +115,22 @@ export const GeneralForm: React.FC<{
           Description <Required />
         </Label>
 
-        <EditorContent
-          editor={editor}
-          className={cn(
-            "prose prose-sm dark:prose-invert max-w-none",
-            "flex h-[250px] w-full flex-col rounded-md border shadow-xs min-data-[orientation=vertical]:h-72",
-            "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
-            "rounded-md shadow-xs dark:bg-input/30",
-            errors.description ? "border-destructive" : "border-input",
-          )}
-        />
+        <Suspense
+          fallback={
+            <div className="space-y-2">
+              <Skeleton className="h-[250px] w-full rounded-md" />
+              <div className="text-muted-foreground text-sm">
+                Loading editor...
+              </div>
+            </div>
+          }
+        >
+          <LazyRichTextEditor
+            content={state.description}
+            onUpdate={handleDescriptionUpdate}
+            error={errors.description}
+          />
+        </Suspense>
         {errors.description && (
           <p className="text-destructive text-sm">{errors.description}</p>
         )}

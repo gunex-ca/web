@@ -61,7 +61,7 @@ export const listing = pgTable(
     description: text("description"),
 
     // Pricing
-    price: numeric("price", { precision: 10, scale: 2 }),
+    price: numeric("price", { precision: 10, scale: 2 }).notNull(),
 
     // Category-specific properties (caliber, action, brand, etc.)
     properties: jsonb("properties"),
@@ -84,8 +84,16 @@ export const listing = pgTable(
     index("listings_status_idx").on(table.status),
     index("listings_price_idx").on(table.price),
     index("listings_display_ordering_idx").on(table.displayOrdering),
+    // Composite index for getNewest query (status + createdAt DESC)
+    index("listings_status_created_at_idx").on(table.status, table.createdAt),
+    // Composite index for category filtering with status and ordering
+    index("listings_category_status_created_at_idx").on(
+      table.subCategoryId,
+      table.status,
+      table.createdAt
+    ),
     uniqueIndex("listings_public_id_uk").on(table.publicId),
-  ],
+  ]
 );
 
 export type ListingInsert = InferInsertModel<typeof listing>;
@@ -107,12 +115,14 @@ export const listingView = pgTable(
     }),
     ipHash: varchar("ip_hash", { length: 64 }),
     userAgent: varchar("user_agent", { length: 256 }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   }),
   (table) => [
     index("listing_view_listing_id_idx").on(table.listingId),
     index("listing_view_viewer_id_idx").on(table.viewerId),
-  ],
+  ]
 );
 
 export const listingImageStatusEnum = pgEnum("listing_image_status", [
@@ -133,10 +143,12 @@ export const listingImage = pgTable(
     name: text("name"),
     alt: varchar("alt", { length: 255 }),
     sortOrder: integer("sort_order").default(0).notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
     status: listingImageStatusEnum("status").notNull(),
   },
-  (table) => [index("listing_images_listing_id_idx").on(table.listingId)],
+  (table) => [index("listing_images_listing_id_idx").on(table.listingId)]
 );
 
 // Cross-post/external references
@@ -153,10 +165,12 @@ export const listingExternal = pgTable(
     postalCode: t.text("postal_code"),
     url: t.varchar("url", { length: 2048 }),
     meta: t.jsonb("meta"),
-    firstSeenAt: t.timestamp("first_seen_at").defaultNow().notNull(),
-    lastSyncedAt: t.timestamp("last_synced_at"),
-    createdAt: t.timestamp("created_at").defaultNow().notNull(),
-    updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
+
+    createdAt: t
+      .timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    lastSyncedAt: t.timestamp("last_synced_at", { withTimezone: true }),
 
     sellerUsername: t.varchar("seller_username", { length: 128 }),
     sellerRating: t.numeric("seller_rating"),
@@ -167,9 +181,9 @@ export const listingExternal = pgTable(
     index("listing_external_platform_idx").on(table.platform),
     uniqueIndex("listing_external_platform_external_id_uk").on(
       table.platform,
-      table.externalId,
+      table.externalId
     ),
-  ],
+  ]
 );
 
 // Favorites (wishlists)
@@ -183,11 +197,13 @@ export const favorite = pgTable(
     listingId: uuid("listing_id")
       .notNull()
       .references(() => listing.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
-  ],
+  ]
 );
 
 // Messages (simple listing-based messaging)
@@ -205,14 +221,16 @@ export const message = pgTable(
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    readAt: timestamp("read_at"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+    readAt: timestamp("read_at", { withTimezone: true }),
   },
   (table) => [
     index("messages_listing_id_idx").on(table.listingId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_receiver_id_idx").on(table.receiverId),
-  ],
+  ]
 );
 
 export const listingReport = pgTable(
@@ -229,7 +247,9 @@ export const listingReport = pgTable(
       onDelete: "cascade",
     }),
     reason: text("reason").notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .defaultNow()
+      .notNull(),
   },
-  (table) => [index("reports_reporter_id_idx").on(table.reporterId)],
+  (table) => [index("reports_reporter_id_idx").on(table.reporterId)]
 );

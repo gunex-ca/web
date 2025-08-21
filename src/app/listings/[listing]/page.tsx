@@ -18,8 +18,8 @@ import { MetaRow } from "./_components/MetaRow";
 import { PhoneReveal } from "./_components/PhoneReveal";
 import { PriceSection } from "./_components/PriceSection";
 import { type SellerInfo, SellerSection } from "./_components/SellersSection";
-import { TitleSection } from "./_components/TitleSection";
-
+import { ActionsSection, TitleSection } from "./_components/TitleSection";
+import { capitalCase } from "change-case";
 import Link from "next/link";
 import { Button } from "~/components/ui/button";
 
@@ -35,18 +35,16 @@ export default async function ListingPage({ params }: PageProps) {
     where: eq(schema.listing.publicId, listingId),
     with: {
       seller: true,
-      images: true,
+      images: { orderBy: (image, { asc }) => [asc(image.sortOrder)] },
       external: true,
     },
   });
   if (!listing) notFound();
 
-  const price = listing.price
-    ? formatCurrency(listing.price)
-    : "Contact for price";
+  const price = formatCurrency(listing.price);
 
   const postalCode = findPostalCode(
-    listing.seller?.postalCode ?? listing?.external?.postalCode ?? "",
+    listing.seller?.postalCode ?? listing?.external?.postalCode ?? ""
   );
   const location =
     postalCode != null
@@ -88,6 +86,7 @@ export default async function ListingPage({ params }: PageProps) {
 
               <TitleSection title={listing.title} />
 
+              <ActionsSection />
               <PriceSection price={price} />
 
               <MetaRow createdAt={listing.createdAt} location={location} />
@@ -129,7 +128,7 @@ export default async function ListingPage({ params }: PageProps) {
               <div className="sticky bottom-0 shrink-0 space-y-2 border-t bg-background p-4 text-sm">
                 <Button variant="secondary" asChild className="w-full">
                   <Link href={listing.external.url ?? ""} rel="nofollow">
-                    View External Listing
+                    View Listing on {capitalCase(listing.external.platform)}
                   </Link>
                 </Button>
               </div>

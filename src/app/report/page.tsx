@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import Navbar from "~/app/_components/Navbar";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
-import { ReportDialog } from "./_components/ReportDialog";
+import { SafetyReportDialog } from "./_components/SafetyReportDialog";
+import { SuspiciousActivityReportDialog } from "./_components/SuspiciousActivityReportDialog";
+import { PolicyViolationReportDialog } from "./_components/PolicyViolationReportDialog";
+import { TechnicalIssueReportDialog } from "./_components/TechnicalIssueReportDialog";
 
 export const metadata: Metadata = {
   title: "Report an Issue • Gunex",
@@ -125,14 +128,7 @@ export default function Report() {
                   <li>• Violence or intimidation</li>
                   <li>• Unsafe firearm handling</li>
                 </ul>
-                <ReportDialog
-                  type="safety"
-                  title="Report Safety Concern"
-                  description="Report immediate safety risks, threats, or dangerous behavior that requires urgent attention."
-                  variant="destructive"
-                >
-                  Report Safety Issue
-                </ReportDialog>
+                <SafetyReportDialog>Report Safety Issue</SafetyReportDialog>
               </CardContent>
             </Card>
 
@@ -170,14 +166,9 @@ export default function Report() {
                   <li>• Suspicious pricing or deals</li>
                   <li>• Users requesting license photos</li>
                 </ul>
-                <ReportDialog
-                  type="suspicious"
-                  title="Report Suspicious Activity"
-                  description="Report suspected scams, fraud, fake profiles, or other suspicious behavior on the platform."
-                  variant="outline"
-                >
+                <SuspiciousActivityReportDialog>
                   Report Suspicious Activity
-                </ReportDialog>
+                </SuspiciousActivityReportDialog>
               </CardContent>
             </Card>
 
@@ -216,14 +207,9 @@ export default function Report() {
                   <li>• Terms of service violations</li>
                   <li>• Misuse of platform features</li>
                 </ul>
-                <ReportDialog
-                  type="policy"
-                  title="Report Policy Violation"
-                  description="Report violations of our community guidelines, terms of service, or platform policies."
-                  variant="outline"
-                >
+                <PolicyViolationReportDialog>
                   Report Policy Violation
-                </ReportDialog>
+                </PolicyViolationReportDialog>
               </CardContent>
             </Card>
 
@@ -268,14 +254,9 @@ export default function Report() {
                   <li>• Mobile app problems</li>
                   <li>• Account access issues</li>
                 </ul>
-                <ReportDialog
-                  type="technical"
-                  title="Report Technical Issue"
-                  description="Report website bugs, security vulnerabilities, or other technical problems."
-                  variant="outline"
-                >
+                <TechnicalIssueReportDialog>
                   Report Technical Issue
-                </ReportDialog>
+                </TechnicalIssueReportDialog>
               </CardContent>
             </Card>
           </div>

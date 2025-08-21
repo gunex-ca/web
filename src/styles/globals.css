@@ -142,4 +142,12 @@
   .prose-sm ol > li::marker {
     color: var(--foreground);
   }
+
+  /* Multi-line clamp utilities */
+  .line-clamp-5 {
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
 }

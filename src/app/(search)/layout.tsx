@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { ListingSearchInput } from "~/components/ListingSerachInput";
 import Navbar from "../_components/Navbar";
 
@@ -8,7 +9,9 @@ export default function RootLayout({
   return (
     <>
       <Navbar />
-      <ListingSearchInput />
+      <Suspense fallback={<div className="h-20" />}>
+        <ListingSearchInput />
+      </Suspense>
       {children}
     </>
   );

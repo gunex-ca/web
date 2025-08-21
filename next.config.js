@@ -4,7 +4,13 @@
  */
 import "./src/env.js";
 
+import withBundleAnalyzer from "@next/bundle-analyzer";
+
 /** @type {import("next").NextConfig} */
 const config = {};
 
-export default config;
+const withAnalyzer = withBundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+export default withAnalyzer(config);
