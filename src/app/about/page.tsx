@@ -204,41 +204,6 @@ export default function About() {
             </CardContent>
           </Card>
 
-          {/* Statistics */}
-          <Card>
-            <CardHeader>
-              <CardTitle>By the Numbers</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-6 md:grid-cols-4">
-                <div className="text-center">
-                  <div className="font-bold text-3xl text-primary">50K+</div>
-                  <div className="text-muted-foreground text-sm">
-                    Active Listings
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-3xl text-primary">15K+</div>
-                  <div className="text-muted-foreground text-sm">
-                    Verified Users
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-3xl text-primary">100K+</div>
-                  <div className="text-muted-foreground text-sm">
-                    Successful Transactions
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-3xl text-primary">99.8%</div>
-                  <div className="text-muted-foreground text-sm">
-                    User Satisfaction
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Canadian Focus */}
           <Card>
             <CardHeader>

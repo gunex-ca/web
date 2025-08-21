@@ -9,7 +9,6 @@ import withBundleAnalyzer from "@next/bundle-analyzer";
 /** @type {import("next").NextConfig} */
 const config = {
   output: "standalone",
-  runtime: "nodejs",
 };
 
 const withAnalyzer = withBundleAnalyzer({

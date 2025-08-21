@@ -30,6 +30,7 @@ import { PhoneReveal } from "./_components/PhoneReveal";
 import { PriceSection } from "./_components/PriceSection";
 import { type SellerInfo, SellerSection } from "./_components/SellersSection";
 import { ActionsSection, TitleSection } from "./_components/TitleSection";
+import { ExitButton } from "./_components/ExitButton";
 
 type PageProps = {
   params: Promise<{ listing: string }>;
@@ -52,7 +53,7 @@ export default async function ListingPage({ params }: PageProps) {
   const price = formatCurrency(listing.price);
 
   const postalCode = findPostalCode(
-    listing.seller?.postalCode ?? listing?.external?.postalCode ?? "",
+    listing.seller?.postalCode ?? listing?.external?.postalCode ?? ""
   );
   const location =
     postalCode != null
@@ -83,7 +84,7 @@ export default async function ListingPage({ params }: PageProps) {
   const relatedionCategory = await db.query.listing.findMany({
     where: and(
       eq(schema.listing.subCategoryId, listing.subCategoryId),
-      ne(schema.listing.id, listing.id),
+      ne(schema.listing.id, listing.id)
     ),
     with: {
       images: { limit: 1, orderBy: (image, { asc }) => [asc(image.sortOrder)] },
@@ -105,7 +106,7 @@ export default async function ListingPage({ params }: PageProps) {
       ? await db.query.listing.findMany({
           where: and(
             sql`${schema.listing.properties} ->> 'caliber' = ${caliber}`,
-            ne(schema.listing.id, listing.id),
+            ne(schema.listing.id, listing.id)
           ),
           with: {
             images: {
@@ -129,7 +130,8 @@ export default async function ListingPage({ params }: PageProps) {
   return (
     <>
       <div className="space-y-14 p-4 pt-10 pb-32 xl:container xl:mx-auto">
-        <div className="flex rounded-md border">
+        <div className="relative flex rounded-md border">
+          <ExitButton className="absolute top-2 left-2 z-40" />
           <ImageCarousel
             className="h-[calc(90vh-60px)] min-h-[500px] w-full rounded-r-none border-r"
             images={images}

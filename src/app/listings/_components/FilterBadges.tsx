@@ -12,6 +12,17 @@ export const FilterBadges: React.FC = () => {
 
   return (
     <div className="flex gap-2">
+      {values.q != null && values.q !== "" && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => setParam("q", undefined)}
+        >
+          Search "{values.q}" <X />
+        </Button>
+      )}
+
       {category && (
         <Button
           variant="secondary"
@@ -23,7 +34,7 @@ export const FilterBadges: React.FC = () => {
         </Button>
       )}
 
-      {(values.maxPrice || values.minPrice) && (
+      {(values.maxPrice != null || values.minPrice != null) && (
         <Button
           variant="secondary"
           size="sm"
@@ -33,11 +44,11 @@ export const FilterBadges: React.FC = () => {
             if (values.minPrice != null) setParam("minPrice", undefined);
           }}
         >
-          {values.minPrice && values.maxPrice
+          {values.minPrice != null && values.maxPrice != null
             ? `${formatCurrency(values.minPrice)} - ${formatCurrency(
                 values.maxPrice
               )}`
-            : values.minPrice
+            : values.minPrice != null
             ? `Min ${formatCurrency(values.minPrice)}`
             : `Max ${formatCurrency(values.maxPrice)}`}
           <X />
