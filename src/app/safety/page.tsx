@@ -45,9 +45,9 @@ export default function Safety() {
           <div className="space-y-4 text-center">
             <h1 className="font-bold text-4xl">Firearms Safety</h1>
             <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              Firearms safety is paramount. Follow these guidelines to ensure safe
-              handling, storage, transportation, and responsible firearm ownership
-              in Canada.
+              Firearms safety is paramount. Follow these guidelines to ensure
+              safe handling, storage, transportation, and responsible firearm
+              ownership in Canada.
             </p>
           </div>
 

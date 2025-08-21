@@ -86,7 +86,7 @@ export function TechnicalIssueReportDialog({
 
       console.log(
         "Technical issue report submitted to support@gunex.ca:",
-        data
+        data,
       );
 
       setIsSubmitted(true);

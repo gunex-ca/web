@@ -1,5 +1,5 @@
 import { TRPCError } from "@trpc/server";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, count, eq, inArray } from "drizzle-orm";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod";
 import {
@@ -18,8 +18,6 @@ const createListingInputSchema = listingInsertSchema.omit({
   sellerId: true,
   createdAt: true,
   updatedAt: true,
-  imported: true,
-  importedAt: true,
 });
 
 import { createPresignedPost } from "@aws-sdk/s3-presigned-post";
@@ -48,7 +46,7 @@ export const listingRouter = createTRPCRouter({
     .input(
       z.object({
         publicId: z.string().min(1),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       // Fetch listing with images for validation
@@ -56,7 +54,7 @@ export const listingRouter = createTRPCRouter({
         where: (listing, { and, eq }) =>
           and(
             eq(listing.publicId, input.publicId),
-            eq(listing.sellerId, ctx.session.user.id)
+            eq(listing.sellerId, ctx.session.user.id),
           ),
         with: { images: true },
       });
@@ -94,8 +92,8 @@ export const listingRouter = createTRPCRouter({
         .where(
           and(
             eq(schema.listing.publicId, input.publicId),
-            eq(schema.listing.sellerId, ctx.session.user.id)
-          )
+            eq(schema.listing.sellerId, ctx.session.user.id),
+          ),
         )
         .returning();
 
@@ -107,7 +105,7 @@ export const listingRouter = createTRPCRouter({
       z.object({
         limit: z.number().optional(),
         categoryId: z.string().optional(),
-      })
+      }),
     )
     .query(async ({ ctx, input }) => {
       const category = categories.find((c) => c.id === input.categoryId);
@@ -119,9 +117,9 @@ export const listingRouter = createTRPCRouter({
             category
               ? inArray(
                   schema.listing.subCategoryId,
-                  category.children.map((s) => s.id)
+                  category.children.map((s) => s.id),
                 )
-              : undefined
+              : undefined,
           ),
           // Only load essential relations and limit image count
           with: {
@@ -153,7 +151,7 @@ export const listingRouter = createTRPCRouter({
                   ? `${location.city}, ${location.province}`
                   : null,
             };
-          })
+          }),
         );
     }),
 
@@ -174,7 +172,7 @@ export const listingRouter = createTRPCRouter({
         name: z.string().min(1),
         listingId: z.string().min(1),
         sortOrder: z.number(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const id = uuidv4();

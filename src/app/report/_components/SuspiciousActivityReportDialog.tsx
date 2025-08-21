@@ -86,7 +86,7 @@ export function SuspiciousActivityReportDialog({
 
       console.log(
         "Suspicious activity report submitted to security@gunex.ca:",
-        data
+        data,
       );
 
       setIsSubmitted(true);

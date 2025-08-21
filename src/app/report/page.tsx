@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Navbar from "~/app/_components/Navbar";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Badge } from "~/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
+import { PolicyViolationReportDialog } from "./_components/PolicyViolationReportDialog";
 import { SafetyReportDialog } from "./_components/SafetyReportDialog";
 import { SuspiciousActivityReportDialog } from "./_components/SuspiciousActivityReportDialog";
-import { PolicyViolationReportDialog } from "./_components/PolicyViolationReportDialog";
 import { TechnicalIssueReportDialog } from "./_components/TechnicalIssueReportDialog";
 
 export const metadata: Metadata = {

@@ -1,6 +1,31 @@
 services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      INTERNAL_SECRET: mbK5wBePiPEpBBES
+
+      BETTER_AUTH_SECRET: voZW7ZzYqt1JWmGq
+      BETTER_AUTH_URL: https://gunex.ca
+
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/gunex
+
+      TYPESENSE_API_KEY: XNggQlHChW0fawET
+      TYPESENSE_HOST: typesense
+      TYPESENSE_PORT: "8108"
+      TYPESENSE_PROTOCOL: http
+      TYPESENSE_COLLECTION_NAME: listings'
+
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: minio
+      S3_SECRET_KEY: minio123
+      LISTING_IMAGES_BUCKET: media
+
   db:
-    image: postgis/postgis:17-3.5
+    image: postgres:17-alpine
     restart: always
     environment:
       POSTGRES_USER: postgres
@@ -16,22 +41,29 @@ services:
           cpus: 1
           memory: 2g
 
-  typesensedb:
-    image: typesense/typesense:0.29.0
+  typesense:
+    image: typesense/typesense:29.0
     environment:
-      - TYPESENSE_API_KEY=secret
+      - TYPESENSE_API_KEY=XNggQlHChW0fawET
       - TYPESENSE_DATA_DIR=/data
     volumes:
       - typesense_data:/data
-    ports:
-      - "8108:8108"
+    expose:
+      - "8108"
     deploy:
       resources:
         limits:
           cpus: "0.5"
           memory: 1g
 
+  gunpost-scapper:
+    image: gunpost-scapper
+    build:
+      context: scrapers
+      dockerfile: scrapers/Dockerfile
+    environment:
+      EXTERNAL_LISTINGS_URL: https://gunex.ca
+
 volumes:
   db_data:
-  opensearch_data:
   typesense_data:

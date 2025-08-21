@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { parseBody, request } from "~/app/api/middleware";
+import { auth } from "~/lib/auth";
 import { formSubmission } from "~/server/db/schema/submission";
 import { takeFirst } from "~/server/db/utils";
-import { auth } from "~/lib/auth";
 
 const submissionSchema = z.object({
   type: z.string().max(64).optional(),
@@ -49,13 +49,13 @@ export const POST = request()
           endpoint,
           receivedAt: inserted.createdAt,
         },
-        { status: 201 }
+        { status: 201 },
       );
     } catch (error) {
       console.error("Form submission error:", error);
       return NextResponse.json(
         { error: "Internal Server Error" },
-        { status: 500 }
+        { status: 500 },
       );
     }
   });

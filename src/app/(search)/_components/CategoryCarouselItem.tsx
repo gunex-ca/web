@@ -54,7 +54,10 @@ export function CategoryCarouselItem({
   className,
 }: CategoryCarouselItemProps) {
   return (
-    <Link href={`/listings/${category.id}`} className={cn("block", className)}>
+    <Link
+      href={`/listings?category=${category.id}`}
+      className={cn("block", className)}
+    >
       <Card className="group hover:-translate-y-0.5 aspect-square cursor-pointer border-border/50 transition-all duration-200 hover:border-border hover:shadow-md">
         <CardContent className="flex h-full flex-col items-center justify-center gap-2 p-3">
           <div className="flex-shrink-0 rounded-full bg-primary/10 p-2 transition-colors duration-200 group-hover:bg-primary/15">

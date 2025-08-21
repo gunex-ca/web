@@ -1,13 +1,13 @@
+import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import {
-  jsonb,
   index,
+  jsonb,
   pgTable,
   text,
   timestamp,
   uuid,
   varchar,
 } from "drizzle-orm/pg-core";
-import type { InferInsertModel, InferSelectModel } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { user } from "./auth";
 
@@ -27,7 +27,7 @@ export const formSubmission = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index("form_submission_user_id_idx").on(table.userId)]
+  (table) => [index("form_submission_user_id_idx").on(table.userId)],
 );
 
 export type FormSubmissionInsert = InferInsertModel<typeof formSubmission>;

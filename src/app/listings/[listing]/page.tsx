@@ -1,7 +1,17 @@
-import { eq } from "drizzle-orm";
+import { capitalCase } from "change-case";
+import { and, eq, ne, sql } from "drizzle-orm";
 import { headers } from "next/headers";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ImageCarousel } from "~/app/listings/[listing]/_components/ImageCarousel";
+import { Button } from "~/components/ui/button";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "~/components/ui/carousel";
 import { formatCurrency } from "~/components/utils";
 import { auth } from "~/lib/auth";
 import { CATEGORY } from "~/lib/categories";
@@ -9,6 +19,7 @@ import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "~/server/db";
 import * as schema from "~/server/db/schema";
 import { buildImageUrl } from "~/server/s3";
+import { ListingCard } from "../_components/ListingCard";
 import { DescriptionSection } from "./_components/DescriptionSection";
 import { DetailsSection } from "./_components/DetailsSection";
 import { ListingBreadcrumbs } from "./_components/ListingBreadcrumbs";
@@ -19,9 +30,6 @@ import { PhoneReveal } from "./_components/PhoneReveal";
 import { PriceSection } from "./_components/PriceSection";
 import { type SellerInfo, SellerSection } from "./_components/SellersSection";
 import { ActionsSection, TitleSection } from "./_components/TitleSection";
-import { capitalCase } from "change-case";
-import Link from "next/link";
-import { Button } from "~/components/ui/button";
 
 type PageProps = {
   params: Promise<{ listing: string }>;
@@ -44,7 +52,7 @@ export default async function ListingPage({ params }: PageProps) {
   const price = formatCurrency(listing.price);
 
   const postalCode = findPostalCode(
-    listing.seller?.postalCode ?? listing?.external?.postalCode ?? ""
+    listing.seller?.postalCode ?? listing?.external?.postalCode ?? "",
   );
   const location =
     postalCode != null
@@ -72,9 +80,55 @@ export default async function ListingPage({ params }: PageProps) {
     reviews: listing.external?.sellerReviews ?? 0,
   };
 
+  const relatedionCategory = await db.query.listing.findMany({
+    where: and(
+      eq(schema.listing.subCategoryId, listing.subCategoryId),
+      ne(schema.listing.id, listing.id),
+    ),
+    with: {
+      images: { limit: 1, orderBy: (image, { asc }) => [asc(image.sortOrder)] },
+      seller: {
+        columns: { postalCode: true },
+      },
+      external: {
+        columns: { postalCode: true },
+      },
+    },
+    orderBy: (listing, { desc }) => [desc(listing.createdAt)],
+    limit: 10,
+  });
+
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+  const caliber = (listing.properties as any)?.caliber;
+  const similarCaliber =
+    caliber != null && caliber !== "Other"
+      ? await db.query.listing.findMany({
+          where: and(
+            sql`${schema.listing.properties} ->> 'caliber' = ${caliber}`,
+            ne(schema.listing.id, listing.id),
+          ),
+          with: {
+            images: {
+              limit: 1,
+              orderBy: (image, { asc }) => [asc(image.sortOrder)],
+            },
+            seller: {
+              columns: { postalCode: true },
+            },
+            external: {
+              columns: { postalCode: true },
+            },
+          },
+          orderBy: (listing, { desc }) => [desc(listing.createdAt)],
+          limit: 10,
+        })
+      : [];
+
+  const category = CATEGORY[listing.subCategoryId];
+
   return (
     <>
-      <div className="p-4 xl:container xl:mx-auto">
+      <div className="space-y-14 p-4 pt-10 pb-32 xl:container xl:mx-auto">
         <div className="flex rounded-md border">
           <ImageCarousel
             className="h-[calc(90vh-60px)] min-h-[500px] w-full rounded-r-none border-r"
@@ -139,6 +193,74 @@ export default async function ListingPage({ params }: PageProps) {
             )}
           </div>
         </div>
+
+        <div className="space-y-4">
+          <h2 className="font-semibold text-2xl">Others in {category?.name}</h2>
+          <Carousel className="w-full" opts={{ slidesToScroll: 2 }}>
+            <CarouselContent>
+              {relatedionCategory.map((listing) => {
+                const pc =
+                  listing.seller?.postalCode ??
+                  listing.external?.postalCode ??
+                  "";
+                const location = findPostalCode(pc);
+                return (
+                  <CarouselItem
+                    key={listing.id}
+                    className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                  >
+                    <ListingCard
+                      listing={{
+                        ...listing,
+                        location:
+                          location != null
+                            ? `${location.city}, ${location.province}`
+                            : null,
+                      }}
+                    />
+                  </CarouselItem>
+                );
+              })}
+            </CarouselContent>
+            <CarouselPrevious />
+            <CarouselNext />
+          </Carousel>
+        </div>
+
+        {similarCaliber.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="font-semibold text-2xl">Also in {caliber}</h2>
+            <Carousel className="w-full" opts={{ slidesToScroll: 2 }}>
+              <CarouselContent>
+                {similarCaliber.map((listing) => {
+                  const pc =
+                    listing.seller?.postalCode ??
+                    listing.external?.postalCode ??
+                    "";
+                  const location = findPostalCode(pc);
+                  return (
+                    <CarouselItem
+                      key={listing.id}
+                      className="basis-1/2 sm:basis-1/3 md:basis-1/4 lg:basis-1/5"
+                    >
+                      <ListingCard
+                        listing={{
+                          ...listing,
+                          location:
+                            location != null
+                              ? `${location.city}, ${location.province}`
+                              : null,
+                        }}
+                      />
+                    </CarouselItem>
+                  );
+                })}
+              </CarouselContent>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
+        )}
       </div>
     </>
   );

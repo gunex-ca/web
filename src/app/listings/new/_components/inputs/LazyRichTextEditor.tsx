@@ -60,7 +60,7 @@ export const LazyRichTextEditor: React.FC<LazyRichTextEditorProps> = ({
         "focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring/50",
         "rounded-md shadow-xs dark:bg-input/30",
         error ? "border-destructive" : "border-input",
-        className
+        className,
       )}
     />
   );

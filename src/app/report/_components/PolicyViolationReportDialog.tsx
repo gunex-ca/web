@@ -84,7 +84,7 @@ export function PolicyViolationReportDialog({
 
       console.log(
         "Policy violation report submitted to compliance@gunex.ca:",
-        data
+        data,
       );
 
       setIsSubmitted(true);

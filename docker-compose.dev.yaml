@@ -16,7 +16,7 @@ services:
           cpus: 1
           memory: 2g
 
-  typesensedb:
+  typesense:
     image: typesense/typesense:29.0
     environment:
       - TYPESENSE_API_KEY=secret

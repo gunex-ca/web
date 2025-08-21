@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback } from "react";
+import { Suspense, lazy, useCallback } from "react";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Skeleton } from "~/components/ui/skeleton";
@@ -11,14 +11,14 @@ import { useListingForm } from "./ListingState";
 const LazyRichTextEditor = lazy(() =>
   import("./inputs/LazyRichTextEditor").then((module) => ({
     default: module.LazyRichTextEditor,
-  }))
+  })),
 );
 
 // Lazy load the image uploader
 const LazyImageUploader = lazy(() =>
   import("./inputs/LazyImageUploader").then((module) => ({
     default: module.LazyImageUploader,
-  }))
+  })),
 );
 
 export const GeneralForm: React.FC<{
@@ -37,7 +37,7 @@ export const GeneralForm: React.FC<{
       onClearError?.("description"); // Clear error immediately when user starts typing
       update({ description: content });
     },
-    [update, onClearError]
+    [update, onClearError],
   );
 
   return (

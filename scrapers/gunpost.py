@@ -7,6 +7,8 @@ import hashlib
 from decimal import Decimal, InvalidOperation
 import pytz
 import time
+import os
+
 
 def get_gunpost_ads(url="https://www.gunpost.ca/ads", page=1):
     response = requests.get(f"{url}?page={page-1}")
@@ -175,6 +177,7 @@ categories_map = {
     "Shooting & Range GearTac Belts & Belt Attachments": "shooting-range-gear-tac-belts-belt-attachments",
     "ArcheryArrows & Broadheads": "archery-arrows-broadheads",
     "OpticsBinoculars/Monoculars": "optics-binoculars-monoculars",
+    "Cases & StorageHard Cases": "cases-storage-hard-cases",
     "Firearm Components, Accessories, & ToolsConversion Kits (caliber change)": "firearm-components-accessories-tools-conversion-kits-caliber-change",
 }
 
@@ -531,14 +534,26 @@ def publish_ad(ad):
     sidebar = ad_soup.find("div", id="rid-sidebar-first")
     first_sidebar_div = sidebar.find("div") if sidebar else None
     image_tags = first_sidebar_div.find_all("img")
+
     image_urls = []
     for img in image_tags:
         src = img.get("src")
         if src and src.strip() and src.strip().startswith('https://media.gunpost.ca/prod'):
-
             if "dad_square" in src:
                 src = src.replace("dad_square", "dad_large")
-            image_urls.append(src.strip())
+            # Optionally remove search params from the URL
+            # clean_src = src.strip().split('?', 1)[0]
+            try:
+                # Try to fetch the image with a HEAD request to check if it exists
+                resp = requests.head(src, timeout=5)
+                if resp.status_code == 200:
+                    image_urls.append(src)
+                else:
+                    print(f"\033[93mImage not fetchable (status {resp.status_code}): {src}\033[0m")
+            except Exception as e:
+                print(f"\033[93mFailed to fetch image: {src} -- {e}\033[0m")
+
+            
 
     category, properties_normalized = map_properties(properties)
 
@@ -575,7 +590,7 @@ def publish_ad(ad):
 
     try:
         response = requests.post(
-            "http://localhost:3000/api/v1/external-listings",
+            os.environ.get("EXTERNAL_LISTINGS_URL", "http://localhost:3000") + "/api/v1/external-listings",
             json=gunpost_ad,
             timeout=10
         )
@@ -596,7 +611,7 @@ def main(pages=50):
     for page in range(1, pages + 1):
         ads = get_gunpost_ads(page=page)
         print(f"\033[91mPage: {page}\033[0m")
-        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=1) as executor:
             futures = [executor.submit(publish_ad, ad) for ad in ads]
             for future in concurrent.futures.as_completed(futures):
                 # Optionally handle exceptions here

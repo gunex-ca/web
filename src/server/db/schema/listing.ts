@@ -68,10 +68,6 @@ export const listing = pgTable(
 
     status: listingStatusEnum("status").default("draft").notNull(),
 
-    // Cross-post/import flags
-    imported: boolean("imported").default(false).notNull(),
-    importedAt: timestamp("imported_at"),
-
     // Bumping/promotion for display ordering
     displayOrdering: integer("display_ordering").default(0).notNull(),
 
@@ -90,10 +86,10 @@ export const listing = pgTable(
     index("listings_category_status_created_at_idx").on(
       table.subCategoryId,
       table.status,
-      table.createdAt
+      table.createdAt,
     ),
     uniqueIndex("listings_public_id_uk").on(table.publicId),
-  ]
+  ],
 );
 
 export type ListingInsert = InferInsertModel<typeof listing>;
@@ -122,7 +118,7 @@ export const listingView = pgTable(
   (table) => [
     index("listing_view_listing_id_idx").on(table.listingId),
     index("listing_view_viewer_id_idx").on(table.viewerId),
-  ]
+  ],
 );
 
 export const listingImageStatusEnum = pgEnum("listing_image_status", [
@@ -148,7 +144,7 @@ export const listingImage = pgTable(
       .notNull(),
     status: listingImageStatusEnum("status").notNull(),
   },
-  (table) => [index("listing_images_listing_id_idx").on(table.listingId)]
+  (table) => [index("listing_images_listing_id_idx").on(table.listingId)],
 );
 
 // Cross-post/external references
@@ -181,9 +177,9 @@ export const listingExternal = pgTable(
     index("listing_external_platform_idx").on(table.platform),
     uniqueIndex("listing_external_platform_external_id_uk").on(
       table.platform,
-      table.externalId
+      table.externalId,
     ),
-  ]
+  ],
 );
 
 // Favorites (wishlists)
@@ -203,7 +199,7 @@ export const favorite = pgTable(
   },
   (table) => [
     uniqueIndex("favorites_user_listing_uk").on(table.userId, table.listingId),
-  ]
+  ],
 );
 
 // Messages (simple listing-based messaging)
@@ -230,7 +226,7 @@ export const message = pgTable(
     index("messages_listing_id_idx").on(table.listingId),
     index("messages_sender_id_idx").on(table.senderId),
     index("messages_receiver_id_idx").on(table.receiverId),
-  ]
+  ],
 );
 
 export const listingReport = pgTable(
@@ -251,5 +247,5 @@ export const listingReport = pgTable(
       .defaultNow()
       .notNull(),
   },
-  (table) => [index("reports_reporter_id_idx").on(table.reporterId)]
+  (table) => [index("reports_reporter_id_idx").on(table.reporterId)],
 );

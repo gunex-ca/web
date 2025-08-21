@@ -1,0 +1,64 @@
+"use client";
+
+import { X } from "lucide-react";
+import { Button } from "~/components/ui/button";
+import { formatCurrency } from "~/components/utils";
+import { useListingsSearchParams } from "~/hooks/use-listings-search-params";
+import { CATEGORY } from "~/lib/categories";
+
+export const FilterBadges: React.FC = () => {
+  const { setParam, values } = useListingsSearchParams();
+  const category = values.category ? CATEGORY[values.category] : null;
+
+  return (
+    <div className="flex gap-2">
+      {category && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => setParam("category", undefined)}
+        >
+          {category.name} <X />
+        </Button>
+      )}
+
+      {(values.maxPrice || values.minPrice) && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => {
+            if (values.maxPrice != null) setParam("maxPrice", undefined);
+            if (values.minPrice != null) setParam("minPrice", undefined);
+          }}
+        >
+          {values.minPrice && values.maxPrice
+            ? `${formatCurrency(values.minPrice)} - ${formatCurrency(
+                values.maxPrice
+              )}`
+            : values.minPrice
+            ? `Min ${formatCurrency(values.minPrice)}`
+            : `Max ${formatCurrency(values.maxPrice)}`}
+          <X />
+        </Button>
+      )}
+
+      {values.distance && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => {
+            if (values.distance != null) setParam("distance", undefined);
+            if (values.lat != null) setParam("lat", undefined);
+            if (values.lng != null) setParam("lng", undefined);
+            setParam("global", true);
+          }}
+        >
+          Under {values.distance} km <X />
+        </Button>
+      )}
+    </div>
+  );
+};

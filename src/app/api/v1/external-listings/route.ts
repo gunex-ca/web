@@ -1,10 +1,12 @@
 import { PutObjectCommand } from "@aws-sdk/client-s3";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { isPresent } from "ts-is-present";
 import { v4 as uuidv4 } from "uuid";
 import { z } from "zod/v4";
 import { env } from "~/env";
 import { CATEGORY } from "~/lib/categories";
+import * as schema from "~/server/db/schema";
 import {
   listing,
   listingExternal,
@@ -12,6 +14,7 @@ import {
 } from "~/server/db/schema/listing";
 import { takeFirst, takeFirstOrNull } from "~/server/db/utils";
 import { s3 } from "~/server/s3";
+import { syncListings } from "~/server/typesense/listings";
 import { parseBody, request } from "../../middleware";
 
 const externalListingUpsertSchema = z.object({
@@ -100,6 +103,7 @@ async function uploadImageToS3(
 
 // Helper function to process images from URLs
 async function processImages(
+  externalUrl: string | undefined,
   imageUrls: string[],
   listingId: string,
   db: typeof import("~/server/db").db,
@@ -159,10 +163,9 @@ async function processImages(
         currentSortOrder++; // Increment for next image
       }
     } catch (error) {
-      console.error(
-        `Failed to process image ${index + 1} from ${imageUrl}:`,
-        error,
-      );
+      console.log(`Failed to process image ${index + 1} from ${imageUrl}`);
+      console.log(externalUrl);
+      console.log(error.message);
       // Continue processing other images even if one fails
     }
   }
@@ -213,7 +216,7 @@ async function updateExistingListing(
   images: Array<typeof listingImage.$inferSelect>;
 }> {
   // Update existing listing
-  const [updatedListing] = await db
+  const updatedListing = await db
     .update(listing)
     .set({
       title: item.title,
@@ -222,15 +225,14 @@ async function updateExistingListing(
       properties: item.properties,
       status: item.status,
       subCategoryId: item.subCategoryId,
-      imported: true,
-      importedAt: new Date(),
       updatedAt: new Date(),
     })
     .where(eq(listing.id, existingExternal.listingId))
-    .returning();
+    .returning()
+    .then(takeFirstOrNull);
 
   // Update external listing record
-  const [updatedExternalRecord] = await db
+  const updatedExternalRecord = await db
     .update(listingExternal)
     .set({
       url: item.external.url,
@@ -238,7 +240,8 @@ async function updateExistingListing(
       lastSyncedAt: new Date(),
     })
     .where(eq(listingExternal.id, existingExternal.id))
-    .returning();
+    .returning()
+    .then(takeFirstOrNull);
 
   if (!updatedListing || !updatedExternalRecord) {
     throw new Error("Failed to update existing listing or external record");
@@ -247,7 +250,12 @@ async function updateExistingListing(
   // Process images if provided
   const images =
     item.external.imageUrls && item.external.imageUrls.length > 0
-      ? await processImages(item.external.imageUrls, updatedListing.id, db)
+      ? await processImages(
+          item.external.url,
+          item.external.imageUrls,
+          updatedListing.id,
+          db,
+        )
       : [];
 
   return {
@@ -267,20 +275,23 @@ async function createNewListing(
   images: Array<typeof listingImage.$inferSelect>;
 }> {
   // Create new listing
-  const [newListing] = await db
+  const newListing = await db
     .insert(listing)
     .values({
       subCategoryId: item.subCategoryId,
       title: item.title,
       description: item.description,
-      price: item.price?.toString(),
+      price:
+        item.price !== undefined && item.price !== null
+          ? item.price.toString()
+          : "0",
       properties: item.properties,
       status: item.status,
-      imported: true,
-      importedAt: new Date(),
       createdAt: item.createdAt ? new Date(item.createdAt) : new Date(),
+      // displayOrdering: new Date(),
     })
-    .returning();
+    .returning()
+    .then(takeFirst);
 
   if (!newListing) {
     throw new Error("Failed to create listing");
@@ -301,7 +312,12 @@ async function createNewListing(
   // Process images if provided
   const images =
     item.external.imageUrls && item.external.imageUrls.length > 0
-      ? await processImages(item.external.imageUrls, newListing.id, db)
+      ? await processImages(
+          item.external.url,
+          item.external.imageUrls,
+          newListing.id,
+          db,
+        )
       : [];
 
   return {
@@ -364,6 +380,12 @@ export const POST = request()
       const result = await processListingItem(item, ctx.db);
       upsertResults.push(result);
     }
+
+    const ids = upsertResults
+      .map((result) => result.listing?.id)
+      .filter(isPresent);
+
+    await syncListings(inArray(schema.listing.id, ids));
 
     return NextResponse.json({
       success: true,

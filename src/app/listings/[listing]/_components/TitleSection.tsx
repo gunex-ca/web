@@ -1,4 +1,5 @@
 import { Bookmark, Flag, MoreHorizontal } from "lucide-react";
+import Link from "next/link";
 import type { FC } from "react";
 import { Button } from "~/components/ui/button";
 import {
@@ -7,7 +8,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "~/components/ui/dropdown-menu";
-import Link from "next/link";
 
 export const TitleSection: FC<{ title: string }> = ({ title }) => (
   <div className="flex items-start justify-between gap-4">

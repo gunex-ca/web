@@ -11,8 +11,12 @@ import { DistanceFilter } from "./_components/DistanceFilter";
 import { ListingCard } from "./_components/ListingCard";
 import { PriceFilter } from "./_components/PriceFilter";
 
+import { inArray } from "drizzle-orm";
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "~/server/db";
+import * as schema from "~/server/db/schema";
+import { api } from "~/trpc/server";
+import { FilterBadges } from "./_components/FilterBadges";
 
 export default async function ListingsPage({
   searchParams,
@@ -37,16 +41,37 @@ export default async function ListingsPage({
   const typedSearchParams: ListingsSearchParams =
     parseListingsSearchParams(urlSearchParams);
 
-  // TODO: Apply filters to the database query based on typedSearchParams
+  const searchListings = await api.search.listings({
+    q: typedSearchParams.q ?? "*",
+    page: typedSearchParams.page ?? 1,
+
+    category: typedSearchParams.category,
+    minPrice: typedSearchParams.minPrice,
+    maxPrice: typedSearchParams.maxPrice,
+
+    location:
+      typedSearchParams.lat &&
+      typedSearchParams.lng &&
+      typedSearchParams.distance
+        ? {
+            latitude: typedSearchParams.lat,
+            longitude: typedSearchParams.lng,
+            radius: typedSearchParams.distance,
+          }
+        : undefined,
+  });
+
   const listings = await db.query.listing.findMany({
+    where: inArray(
+      schema.listing.id,
+      searchListings.hits?.map((listing) => listing.document.id) ?? []
+    ),
     with: {
       seller: true,
       images: true,
       external: true,
     },
   });
-
-  console.log("Typed search params:", typedSearchParams); // For debugging
 
   return (
     <>
@@ -73,24 +98,27 @@ export default async function ListingsPage({
             <PriceFilter />
           </div>
 
-          <div className="grid min-w-0 flex-grow grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {listings.map((listing) => {
-              const pc =
-                listing.seller?.postalCode ?? listing.external?.postalCode;
-              const location = findPostalCode(pc ?? "");
-              return (
-                <ListingCard
-                  key={listing.id}
-                  listing={{
-                    ...listing,
-                    location:
-                      location != null
-                        ? `${location?.city}, ${location?.province}`
-                        : null,
-                  }}
-                />
-              );
-            })}
+          <div className="space-y-4">
+            <FilterBadges />
+            <div className="grid min-w-0 flex-grow grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {listings.map((listing) => {
+                const pc =
+                  listing.seller?.postalCode ?? listing.external?.postalCode;
+                const location = findPostalCode(pc ?? "");
+                return (
+                  <ListingCard
+                    key={listing.id}
+                    listing={{
+                      ...listing,
+                      location:
+                        location != null
+                          ? `${location?.city}, ${location?.province}`
+                          : null,
+                    }}
+                  />
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

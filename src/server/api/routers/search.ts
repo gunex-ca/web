@@ -1,9 +1,76 @@
 import { z } from "zod/v4";
 import { typesense } from "~/server/typesense/client";
-import type { FRTV1 } from "~/server/typesense/schemas";
+import type { FRTV1, ListingV1 } from "~/server/typesense/schemas";
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
 export const searchRouter = createTRPCRouter({
+  listings: publicProcedure
+    .input(
+      z.object({
+        q: z.string(),
+        limit: z.number().optional(),
+        page: z.number().optional(),
+        category: z.string().optional(),
+
+        minPrice: z.number().optional(),
+        maxPrice: z.number().optional(),
+
+        location: z
+          .object({
+            latitude: z.number(),
+            longitude: z.number(),
+            radius: z.number(),
+          })
+          .optional(),
+      })
+    )
+    .query(async ({ input }) => {
+      const queryBy = [
+        ["title", 10],
+        ["description_text", 15],
+        ["caliber", 5],
+        ["manufacturer", 5],
+        ["model", 5],
+        ["category", 1],
+        ["sub_category", 1],
+      ] as const;
+
+      const filterBy = [
+        ...(input.category
+          ? [`(category:=${input.category} || sub_category:=${input.category})`]
+          : []),
+        ...(input.location
+          ? [
+              `location:(${input.location.latitude}, ${input.location.longitude}, ${input.location.radius} km)`,
+            ]
+          : []),
+
+        ...(input.minPrice ? [`price:>=${input.minPrice}`] : []),
+        ...(input.maxPrice ? [`price:<=${input.maxPrice}`] : []),
+      ]
+        .filter(Boolean)
+        .join(" && ");
+
+      const result = await typesense
+        .collections<ListingV1>("listing_v1")
+        .documents()
+        .search({
+          q: input.q,
+
+          query_by: queryBy.map(([field]) => field),
+          query_by_weights: queryBy.map(([, weight]) => weight),
+
+          filter_by: filterBy,
+
+          facet_by: ["sub_category", "manufacturer", "model", "caliber"],
+
+          limit: input.limit ?? 50,
+          page: input.page ?? 1,
+        });
+
+      return result;
+    }),
+
   manufacturers: publicProcedure.input(z.string()).query(async ({ input }) => {
     const result = await typesense
       .collections<FRTV1>("frt_v1")
@@ -30,7 +97,7 @@ export const searchRouter = createTRPCRouter({
       z.object({
         manufacturer: z.string(),
         q: z.string(),
-      }),
+      })
     )
     .query(async ({ input: { manufacturer, q } }) => {
       const result = await typesense
