@@ -1,4 +1,18 @@
-import jsonGuns from "../../../frt/guns.json";
+const getGuns = () => {
+  try {
+    const fs = require("node:fs");
+    const path = require("node:path");
+    const DATA_FILE = path.join(process.cwd(), "frt/guns.json");
+
+    const file = fs.readFileSync(DATA_FILE, "utf8");
+    const data = JSON.parse(file);
+
+    return data as Gun[];
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
 
 type Gun = {
   frn: string;
@@ -12,7 +26,7 @@ type Gun = {
   pages: number[];
 };
 
-export const guns = jsonGuns as Gun[];
+export const guns = getGuns();
 
 export const getCalibres = (manufacturer: string, model: string) => {
   return guns

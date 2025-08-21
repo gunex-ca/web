@@ -2,12 +2,7 @@ import { useMemo } from "react";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import {
-  actions,
-  calibers,
-  guns,
-  legalClasses,
-} from "~/lib/categories/gun-manufacturer";
+
 import { Required } from "../../../../../components/Required";
 import { useListingForm } from "../ListingState";
 import { ComboBox } from "../inputs/ComboBox";
@@ -17,6 +12,7 @@ import {
   FirearmsManufacturerModelInput,
 } from "../inputs/FirearmsInputs";
 import { useMount } from "./use-mount";
+import { api } from "~/trpc/react";
 
 type FirearmsFormProperties = {
   condition: string;
@@ -59,14 +55,26 @@ export const FirearmsGunCreateForm: React.FC<{
     update({ properties: defaultProperties });
   });
 
-  const models = useMemo(
-    () => guns.filter((g) => g.manufacturer === state.properties.manufacturer),
-    [state.properties.manufacturer],
-  );
+  const { data: actions = [], isLoading: actionsLoading } =
+    api.gun.getActions.useQuery();
+
+  const { data: models = [], isLoading: modelsLoading } =
+    api.gun.getModels.useQuery({
+      manufacturer: state.properties.manufacturer,
+    });
+
+  const { data: legalClasses = [], isLoading: legalClassesLoading } =
+    api.gun.getLegalClasses.useQuery({
+      manufacturer: state.properties.manufacturer,
+      model: state.properties.model,
+    });
+
+  const { data: calibers = [], isLoading: calibersLoading } =
+    api.gun.getCalibres.useQuery();
 
   const model = useMemo(
     () => models.find((m) => m.model === state.properties.model),
-    [state.properties.model, models],
+    [state.properties.model, models]
   );
 
   return (
@@ -180,7 +188,10 @@ export const FirearmsGunCreateForm: React.FC<{
             update({ properties: { ...state.properties, classification: e } });
             onClearError?.("classification");
           }}
-          options={legalClasses.map((a) => ({ label: a, value: a }))}
+          options={legalClasses.map((a) => ({
+            label: a.legal_class,
+            value: a.legal_class,
+          }))}
         />
         {errors.Classification && (
           <p className="text-destructive text-sm">{errors.Classification}</p>

@@ -590,7 +590,7 @@ def publish_ad(ad):
 
     try:
         response = requests.post(
-            os.environ.get("EXTERNAL_LISTINGS_URL", "http://localhost:3000") + "/api/v1/external-listings",
+            os.environ.get("GUNEX_URL", "http://localhost:3000") + "/api/v1/external-listings",
             json=gunpost_ad,
             timeout=10
         )

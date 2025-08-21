@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { SignInForm } from "./_components/SignInForm";
 
 export const metadata = {
@@ -18,6 +19,18 @@ export default function SignIn() {
         </div>
 
         <SignInForm />
+
+        <div className="mt-6 text-center">
+          <p className="text-muted-foreground text-sm">
+            Don't have an account?{" "}
+            <Link
+              href="/sign-up"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

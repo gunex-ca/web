@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { SignUpForm } from "./_components/SignUpForm";
 
 export const metadata: Metadata = {
@@ -25,6 +26,18 @@ export default function SignUp() {
           </p>
         </div>
         <SignUpForm />
+
+        <div className="mt-6 text-center">
+          <p className="text-muted-foreground text-sm">
+            Already have an account?{" "}
+            <Link
+              href="/sign-in"
+              className="font-medium text-primary underline-offset-4 hover:underline"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </main>
   );

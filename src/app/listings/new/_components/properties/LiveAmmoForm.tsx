@@ -3,6 +3,7 @@ import { calibers } from "~/lib/categories/gun-manufacturer";
 import { useListingForm } from "../ListingState";
 import { ComboBox } from "../inputs/ComboBox";
 import { useMount } from "./use-mount";
+import { api } from "~/trpc/react";
 
 type AmmoFormProperties = {
   caliber: string;
@@ -19,12 +20,14 @@ export const AMMO_REQUIRED_FIELDS = [
 export const AmmoForm: React.FC<{
   errors?: Record<string, string>;
   onClearError?: (field: string) => void;
-}> = ({ errors = {}, onClearError }) => {
+}> = ({ errors = {} }) => {
   const { state, update } = useListingForm<AmmoFormProperties>();
 
   useMount(() => {
     update({ properties: defaultProperties });
   });
+
+  const { data: calibers, isLoading } = api.gun.getCalibres.useQuery();
 
   return (
     <div className="space-y-4">
@@ -35,9 +38,11 @@ export const AmmoForm: React.FC<{
           onChange={(e) => {
             update({ properties: { ...state.properties, caliber: e } });
           }}
+          placeholder={isLoading ? "Loading..." : ""}
+          disabled={isLoading}
           options={[
             { label: "(Other)", value: "Other" },
-            ...calibers.map((a) => ({ label: a, value: a })),
+            ...(calibers?.map((a) => ({ label: a, value: a })) ?? []),
           ]}
         />
         {errors.caliber && (
