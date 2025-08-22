@@ -14,7 +14,7 @@ export const env = createEnv({
     INTERNAL_AUTH_TOKEN: z.string().default("secret"),
 
     TYPESENSE_HOST: z.string().default("localhost"),
-    TYPESENSE_PORT: z.number().default(8108),
+    TYPESENSE_PORT: z.string().default("8108"),
     TYPESENSE_API_KEY: z.string().default("secret"),
     OPENAI_API_KEY: z.string().optional(),
 

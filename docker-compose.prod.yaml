@@ -1,5 +1,6 @@
 services:
   app:
+    image: nextjs
     build:
       context: .
       dockerfile: Dockerfile

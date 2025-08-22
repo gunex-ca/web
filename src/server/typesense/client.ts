@@ -5,11 +5,11 @@ export const typesense = new Client({
   nodes: [
     {
       host: env.TYPESENSE_HOST,
-      port: env.TYPESENSE_PORT,
+      port: Number(env.TYPESENSE_PORT),
       protocol: "http",
     },
   ],
-  apiKey: env.TYPESENSE_API_KEY,
+  apiKey: env.TYPESENSE_API_KEY ?? "secret",
   connectionTimeoutSeconds: 2,
 });
 
@@ -33,7 +33,7 @@ export async function createNLSearchModel(body: {
   if (!res.ok) {
     const text = await res.text();
     throw new Error(
-      `Failed to create Gemini NL Search Model: ${res.status} ${text}`,
+      `Failed to create Gemini NL Search Model: ${res.status} ${text}`
     );
   }
 

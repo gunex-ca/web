@@ -1,0 +1,7 @@
+app:
+  id: ""
+  slug: gunex
+environments:
+  production:
+    compose-files:
+    - file:docker-compose.prod.yaml

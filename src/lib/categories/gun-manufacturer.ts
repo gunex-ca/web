@@ -2,7 +2,7 @@ const getGuns = () => {
   try {
     const fs = require("node:fs");
     const path = require("node:path");
-    const DATA_FILE = path.join(process.cwd(), "frt/guns.json");
+    const DATA_FILE = path.join(process.cwd(), "guns.json");
 
     const file = fs.readFileSync(DATA_FILE, "utf8");
     const data = JSON.parse(file);

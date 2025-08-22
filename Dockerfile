@@ -45,6 +45,7 @@ RUN adduser --system --uid 1001 nextjs
 USER nextjs
 
 COPY CA_full.txt ./CA_full.txt
+COPY guns.json ./guns.json
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
