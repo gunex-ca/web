@@ -38,12 +38,12 @@ RUN apk add --no-cache bash curl openssl && \
     ./get_helm.sh --version v3.18.4 && \
     rm get_helm.sh
 
-
 # Don't run production as root
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 USER nextjs
 
+COPY drizzle ./drizzle
 COPY CA_full.txt ./CA_full.txt
 COPY guns.json ./guns.json
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
