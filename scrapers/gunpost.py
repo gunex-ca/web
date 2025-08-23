@@ -103,7 +103,7 @@ conditions_map = {
 
 categories_map = {
     "Airgun & AirsoftAccessories": "airgun-airsoft-accessories",
-    "FirearmsReplicas or Deactivated": "firearms-replicas-deactivated",
+    "FirearmsReplicas or Deactivated": "firearms-replicas-or-deactivated",
     "ReloadingDies": "reloading-dies",
     "ReloadingPresses": "reloading-presses",
     "Shooting & Range GearHolsters": "shooting-range-gear-holsters",
@@ -152,7 +152,7 @@ categories_map = {
     "HuntingDecoys": "hunting-decoys",
     "Airgun & AirsoftAir Pistols": "airgun-airsoft-air-pistols",
     "Shooting & Range GearShooting Rests": "shooting-range-gear-shooting-rests",
-    "Cases & StorageSafes or Cabinets": "cases-storage-safes-cabinets",
+    "Cases & StorageSafes or Cabinets": "cases-storage-safes-or-cabinets",
     "Cases & StorageAmmo Cans": "cases-storage-ammo-cans",
     "Firearm Components, Accessories, & ToolsMiscellaneous": "firearm-components-accessories-tools-miscellaneous",
     "Firearm Components, Accessories, & ToolsMiscellaneous": "firearm-components-accessories-tools-miscellaneous",
@@ -178,6 +178,11 @@ categories_map = {
     "ArcheryArrows & Broadheads": "archery-arrows-broadheads",
     "OpticsBinoculars/Monoculars": "optics-binoculars-monoculars",
     "Cases & StorageHard Cases": "cases-storage-hard-cases",
+    "BladesSheaths": "blades-sheaths",
+    "HuntingGame Calls": "hunting-game-calls",
+    "OpticsCrossbow Scopes": "optics-crossbow-scopes",
+    "AmmunitionBlanks": "ammunition-blanks",
+    "Firearm Components, Accessories, & ToolsSlings": "firearm-components-accessories-tools-slings",
     "Firearm Components, Accessories, & ToolsConversion Kits (caliber change)": "firearm-components-accessories-tools-conversion-kits-caliber-change",
 }
 
