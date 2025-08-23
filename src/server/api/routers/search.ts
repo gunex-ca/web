@@ -12,7 +12,7 @@ export const searchRouter = createTRPCRouter({
     .input(
       z.object({
         q: z.string().optional(),
-        limit: z.number().optional(),
+        perPage: z.number().optional(),
         page: z.number().optional(),
         category: z.string().optional(),
 
@@ -96,7 +96,7 @@ export const searchRouter = createTRPCRouter({
 
           sort_by: sortBy,
 
-          limit: input.limit ?? 50,
+          limit: input.perPage ?? 12,
           page: input.page ?? 1,
         });
 
@@ -123,7 +123,7 @@ export const searchRouter = createTRPCRouter({
       // Extract pagination metadata from Typesense result
       const totalResults = result.found ?? 0;
       const currentPage = result.page ?? 1;
-      const perPage = result.request_params?.per_page ?? input.limit ?? 50;
+      const perPage = result.request_params?.per_page ?? input.perPage ?? 12;
       const totalPages = Math.ceil(totalResults / perPage);
 
       return {

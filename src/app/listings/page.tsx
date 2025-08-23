@@ -78,11 +78,11 @@ export default async function ListingsPage({
   const typedSearchParams: ListingsSearchParams =
     parseListingsSearchParams(urlSearchParams);
 
-  const perPage = 12 * 2 * 2 * 2;
+  const perPage = 60;
   const listings = await api.search.listings({
     q: typedSearchParams.q,
     page: typedSearchParams.page ?? 1,
-    limit: perPage,
+    perPage,
 
     category: typedSearchParams.category,
     minPrice: typedSearchParams.minPrice,

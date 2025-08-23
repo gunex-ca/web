@@ -4,6 +4,7 @@ import { convert } from "html-to-text";
 import { CATEGORY } from "~/lib/categories";
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "../db";
+import { listing } from "../db/schema";
 import { typesense } from "./client";
 import type { ListingV1 } from "./schemas";
 
@@ -84,4 +85,56 @@ export async function syncListings(where?: SQL<unknown>) {
     .import(listingsV1, { action: "upsert" });
 
   return { listingsV1, count: listingsV1.length, upsertResponse };
+}
+
+export async function deleteStaleListings() {
+  // Step 1: Get all document IDs from Typesense
+  console.log("Fetching all Typesense listing IDs...");
+  const collection = typesense.collections<ListingV1>("listing_v1");
+
+  // Export all documents to get their IDs
+  const exportResponse = await collection.documents().export();
+
+  // Parse the JSONL response to extract IDs
+  const typesenseIds = exportResponse
+    .split("\n")
+    .filter((line) => line.trim() !== "")
+    .map((line) => {
+      try {
+        const doc = JSON.parse(line) as ListingV1;
+        return doc.id;
+      } catch (e) {
+        console.warn("Failed to parse Typesense document:", line);
+        return null;
+      }
+    })
+    .filter((id): id is string => id !== null);
+
+  console.log(`Found ${typesenseIds.length} listings in Typesense`);
+
+  // Step 2: Get all listing IDs from database
+  console.log("Fetching all database listing IDs...");
+  const databaseListings = await db.select({ id: listing.id }).from(listing);
+  const databaseIds = new Set(databaseListings.map((l) => l.id));
+
+  console.log(`Found ${databaseIds.size} listings in database`);
+
+  // Step 3: Find IDs that are in Typesense but not in database
+  const idsToDelete = typesenseIds.filter((id) => !databaseIds.has(id));
+
+  console.log(`Found ${idsToDelete.length} stale listings to delete`);
+
+  if (idsToDelete.length === 0) {
+    return { deleted: 0, batches: 0 };
+  }
+
+  for (const id of idsToDelete) {
+    const r = await collection.documents(id).delete();
+    console.log(r);
+  }
+
+  return {
+    deleted: idsToDelete.length,
+    staleIds: idsToDelete,
+  };
 }
