@@ -1,9 +1,9 @@
 import { Label } from "~/components/ui/label";
 import { calibers } from "~/lib/categories/gun-manufacturer";
+import { api } from "~/trpc/react";
 import { useListingForm } from "../ListingState";
 import { ComboBox } from "../inputs/ComboBox";
 import { useMount } from "./use-mount";
-import { api } from "~/trpc/react";
 
 type AmmoFormProperties = {
   caliber: string;

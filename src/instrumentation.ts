@@ -1,9 +1,9 @@
+import { readMigrationFiles } from "drizzle-orm/migrator";
+import { migrate as drizzleMigrate } from "drizzle-orm/node-postgres/migrator";
 import { env } from "./env";
+import { db } from "./server/db";
 import { createNLSearchModel, typesense } from "./server/typesense/client";
 import { schemas } from "./server/typesense/schemas";
-import { migrate as drizzleMigrate } from "drizzle-orm/node-postgres/migrator";
-import { readMigrationFiles } from "drizzle-orm/migrator";
-import { db } from "./server/db";
 
 const migrationsFolder = "./drizzle";
 
@@ -27,7 +27,7 @@ const typesenseMigrations = async () => {
           "Error creating collection",
           error.name,
           schema.name,
-          error
+          error,
         );
       }
     }

@@ -22,6 +22,7 @@ import { buildImageUrl } from "~/server/s3";
 import { ListingCard } from "../_components/ListingCard";
 import { DescriptionSection } from "./_components/DescriptionSection";
 import { DetailsSection } from "./_components/DetailsSection";
+import { ExitButton } from "./_components/ExitButton";
 import { ListingBreadcrumbs } from "./_components/ListingBreadcrumbs";
 import { LocationMapClient } from "./_components/LocationMapClient";
 import { MessageForm } from "./_components/MessageForm";
@@ -30,7 +31,6 @@ import { PhoneReveal } from "./_components/PhoneReveal";
 import { PriceSection } from "./_components/PriceSection";
 import { type SellerInfo, SellerSection } from "./_components/SellersSection";
 import { ActionsSection, TitleSection } from "./_components/TitleSection";
-import { ExitButton } from "./_components/ExitButton";
 
 type PageProps = {
   params: Promise<{ listing: string }>;
@@ -53,7 +53,7 @@ export default async function ListingPage({ params }: PageProps) {
   const price = formatCurrency(listing.price);
 
   const postalCode = findPostalCode(
-    listing.seller?.postalCode ?? listing?.external?.postalCode ?? ""
+    listing.seller?.postalCode ?? listing?.external?.postalCode ?? "",
   );
   const location =
     postalCode != null
@@ -84,7 +84,7 @@ export default async function ListingPage({ params }: PageProps) {
   const relatedionCategory = await db.query.listing.findMany({
     where: and(
       eq(schema.listing.subCategoryId, listing.subCategoryId),
-      ne(schema.listing.id, listing.id)
+      ne(schema.listing.id, listing.id),
     ),
     with: {
       images: { limit: 1, orderBy: (image, { asc }) => [asc(image.sortOrder)] },
@@ -106,7 +106,7 @@ export default async function ListingPage({ params }: PageProps) {
       ? await db.query.listing.findMany({
           where: and(
             sql`${schema.listing.properties} ->> 'caliber' = ${caliber}`,
-            ne(schema.listing.id, listing.id)
+            ne(schema.listing.id, listing.id),
           ),
           with: {
             images: {

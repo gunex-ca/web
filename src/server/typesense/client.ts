@@ -33,7 +33,7 @@ export async function createNLSearchModel(body: {
   if (!res.ok) {
     const text = await res.text();
     throw new Error(
-      `Failed to create Gemini NL Search Model: ${res.status} ${text}`
+      `Failed to create Gemini NL Search Model: ${res.status} ${text}`,
     );
   }
 

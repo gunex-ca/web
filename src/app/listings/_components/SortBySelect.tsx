@@ -21,7 +21,7 @@ export function SortBySelect() {
         | "price_desc"
         | "newest"
         | "oldest"
-        | "closest"
+        | "closest",
     );
   };
 

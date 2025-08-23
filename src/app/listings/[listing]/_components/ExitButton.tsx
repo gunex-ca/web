@@ -1,8 +1,8 @@
 "use client";
 import { X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/components/utils";
-import { useEffect, useState } from "react";
 
 export const ExitButton = ({ className }: { className?: string }) => {
   const [canGoBack, setCanGoBack] = useState(false);

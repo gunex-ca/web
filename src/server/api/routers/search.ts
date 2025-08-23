@@ -1,11 +1,11 @@
+import { inArray } from "drizzle-orm";
+import { isPresent } from "ts-is-present";
 import { z } from "zod/v4";
+import { db } from "~/server/db";
+import * as schema from "~/server/db/schema";
 import { typesense } from "~/server/typesense/client";
 import type { FRTV1, ListingV1 } from "~/server/typesense/schemas";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import { inArray } from "drizzle-orm";
-import * as schema from "~/server/db/schema";
-import { db } from "~/server/db";
-import { isPresent } from "ts-is-present";
 
 export const searchRouter = createTRPCRouter({
   listings: publicProcedure
@@ -37,7 +37,7 @@ export const searchRouter = createTRPCRouter({
             radius: z.number(),
           })
           .optional(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       const queryBy = [
@@ -114,7 +114,7 @@ export const searchRouter = createTRPCRouter({
       });
 
       const listingMap = new Map(
-        listings.map((listing) => [listing.id, listing])
+        listings.map((listing) => [listing.id, listing]),
       );
       const sortedListings = orderedIds
         .map((id) => listingMap.get(id))
@@ -166,7 +166,7 @@ export const searchRouter = createTRPCRouter({
       z.object({
         manufacturer: z.string(),
         q: z.string(),
-      })
+      }),
     )
     .query(async ({ input: { manufacturer, q } }) => {
       const result = await typesense

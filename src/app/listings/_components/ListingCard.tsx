@@ -1,8 +1,8 @@
+import { formatDistanceToNowStrict } from "date-fns";
 import Link from "next/link";
 import { cn, formatCurrency } from "~/components/utils";
 import { buildImageUrl } from "~/server/s3";
 import { ListingImage } from "./ListingImage";
-import { formatDistanceToNowStrict } from "date-fns";
 
 type ListingImageData = {
   objectKey?: string | null;

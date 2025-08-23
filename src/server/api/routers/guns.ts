@@ -1,3 +1,4 @@
+import z from "zod";
 import {
   actions,
   calibers,
@@ -5,7 +6,6 @@ import {
   manufacturers,
 } from "~/lib/categories/gun-manufacturer";
 import { createTRPCRouter, publicProcedure } from "../trpc";
-import z from "zod";
 
 export const gunsRouter = createTRPCRouter({
   getGuns: publicProcedure.query(async () => {
@@ -24,7 +24,7 @@ export const gunsRouter = createTRPCRouter({
     .input(
       z.object({
         manufacturer: z.string(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       return guns.filter((m) => m.manufacturer === input.manufacturer);
@@ -35,11 +35,11 @@ export const gunsRouter = createTRPCRouter({
       z.object({
         manufacturer: z.string(),
         model: z.string(),
-      })
+      }),
     )
     .query(async ({ input }) => {
       return guns.filter(
-        (m) => m.manufacturer === input.manufacturer && m.model === input.model
+        (m) => m.manufacturer === input.manufacturer && m.model === input.model,
       );
     }),
 

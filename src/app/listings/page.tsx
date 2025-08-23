@@ -13,6 +13,7 @@ import { PriceFilter } from "./_components/PriceFilter";
 
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { api } from "~/trpc/server";
+import { CategoryFilter } from "./_components/CategoryFilter";
 import { FilterBadges } from "./_components/FilterBadges";
 import { SortBySelect } from "./_components/SortBySelect";
 
@@ -117,16 +118,13 @@ export default async function ListingsPage({
             <Separator />
             <DistanceFilter />
             <Separator />
-            <div>
-              <h3 className="font-semibold ">Category</h3>
-              <div />
-            </div>
+            <CategoryFilter />
             <Separator />
 
             <PriceFilter />
           </div>
 
-          <div className="space-y-4">
+          <div className="flex-grow space-y-4">
             <div className="flex items-center justify-between">
               <FilterBadges />
 

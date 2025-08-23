@@ -3,6 +3,7 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 
+import { api } from "~/trpc/react";
 import { Required } from "../../../../../components/Required";
 import { useListingForm } from "../ListingState";
 import { ComboBox } from "../inputs/ComboBox";
@@ -12,7 +13,6 @@ import {
   FirearmsManufacturerModelInput,
 } from "../inputs/FirearmsInputs";
 import { useMount } from "./use-mount";
-import { api } from "~/trpc/react";
 
 type FirearmsFormProperties = {
   condition: string;
@@ -74,7 +74,7 @@ export const FirearmsGunCreateForm: React.FC<{
 
   const model = useMemo(
     () => models.find((m) => m.model === state.properties.model),
-    [state.properties.model, models]
+    [state.properties.model, models],
   );
 
   return (

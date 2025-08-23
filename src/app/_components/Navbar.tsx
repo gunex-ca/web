@@ -35,7 +35,7 @@ export default async function Navbar({
           <Link href="/listings" className="hover:text-foreground">
             Listings
           </Link>
-          <Link href="/" className="hover:text-foreground">
+          <Link href="/categories" className="hover:text-foreground">
             Categories
           </Link>
           <HelpDropdown />

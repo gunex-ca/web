@@ -1,7 +1,7 @@
-import { auth } from "~/lib/auth";
-import Navbar from "../_components/Navbar";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { auth } from "~/lib/auth";
+import Navbar from "../_components/Navbar";
 
 export default async function MessagesLayout({
   children,

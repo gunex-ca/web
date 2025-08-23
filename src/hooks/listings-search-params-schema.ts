@@ -54,7 +54,7 @@ export type ListingsSearchParams = {
 
 // Helper to parse search params (works on both server and client)
 export function parseListingsSearchParams(
-  searchParams: URLSearchParams
+  searchParams: URLSearchParams,
 ): ListingsSearchParams {
   const result: Record<string, unknown> = {};
 

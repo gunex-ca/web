@@ -2,8 +2,8 @@ import { listingRouter } from "~/server/api/routers/listings";
 import { locationRouter } from "~/server/api/routers/location";
 import { userRouter } from "~/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "~/server/api/trpc";
-import { searchRouter } from "./routers/search";
 import { gunsRouter } from "./routers/guns";
+import { searchRouter } from "./routers/search";
 
 /**
  * This is the primary router for your server.
