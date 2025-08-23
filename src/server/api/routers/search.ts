@@ -113,11 +113,6 @@ export const searchRouter = createTRPCRouter({
         },
       });
 
-      console.log(orderedIds.length, orderedIds);
-      console.log(listings.length);
-      console.log(result.hits.length);
-
-      // Sort listings to match the order from Typesense search results
       const listingMap = new Map(
         listings.map((listing) => [listing.id, listing])
       );
