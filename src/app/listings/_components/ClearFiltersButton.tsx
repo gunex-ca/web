@@ -20,6 +20,8 @@ export const ClearFiltersButton: React.FC = () => {
       minPrice: undefined,
       maxPrice: undefined,
       category: undefined,
+      action: undefined,
+      manufacturer: undefined,
       page: 1,
     });
   };

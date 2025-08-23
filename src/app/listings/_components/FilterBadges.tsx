@@ -34,6 +34,28 @@ export const FilterBadges: React.FC = () => {
         </Button>
       )}
 
+      {Array.isArray(values.action) && values.action.length > 0 && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => setParam("action", undefined)}
+        >
+          {values.action.join(", ")} <X />
+        </Button>
+      )}
+
+      {Array.isArray(values.manufacturer) && values.manufacturer.length > 0 && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => setParam("manufacturer", undefined)}
+        >
+          {values.manufacturer.join(", ")} <X />
+        </Button>
+      )}
+
       {(values.maxPrice != null || values.minPrice != null) && (
         <Button
           variant="secondary"

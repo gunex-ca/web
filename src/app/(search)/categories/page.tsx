@@ -59,7 +59,7 @@ async function getSubcategoryCounts(): Promise<CountsMap> {
     })) as SearchResponse;
 
     const subFacet = (res.facet_counts ?? []).find(
-      (f) => f.field_name === "sub_category"
+      (f) => f.field_name === "sub_category",
     );
     const mapping: CountsMap = {};
     if (subFacet?.counts) {

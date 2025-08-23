@@ -70,6 +70,31 @@ export function stringCodec(defaultValue: string): QueryParamCodec<string> {
   };
 }
 
+export function stringArrayCodec(
+  separator = ",",
+  options?: { trim?: boolean; lowercase?: boolean },
+): QueryParamCodec<string[]> {
+  const shouldTrim = options?.trim ?? true;
+  const shouldLower = options?.lowercase ?? false;
+  return {
+    parse: (raw) => {
+      if (raw === null || raw === "") return [];
+      const parts = raw.split(separator);
+      return parts
+        .map((p) => (shouldTrim ? p.trim() : p))
+        .map((p) => (shouldLower ? p.toLowerCase() : p))
+        .filter((p) => p !== "");
+    },
+    serialize: (value) => {
+      if (!Array.isArray(value) || value.length === 0) return null;
+      const parts = value
+        .map((p) => (shouldTrim ? p.trim() : p))
+        .filter((p) => p !== "");
+      return parts.length ? parts.join(separator) : null;
+    },
+  };
+}
+
 export function optional<T>(
   codec: QueryParamCodec<T>,
 ): QueryParamCodec<T | undefined> {

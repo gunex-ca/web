@@ -13,8 +13,10 @@ import { PriceFilter } from "./_components/PriceFilter";
 
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { api } from "~/trpc/server";
-import { CategoryFilter } from "./_components/CategoryFilter";
+import ActionFilter from "./_components/ActionFilter";
+import CategoryFilter from "./_components/CategoryFilter";
 import { FilterBadges } from "./_components/FilterBadges";
+import ManufacturerFilter from "./_components/ManufacturerFilter";
 import { SortBySelect } from "./_components/SortBySelect";
 
 import {
@@ -30,13 +32,17 @@ import {
 // Helper function to generate pagination URLs with search parameters
 function createPaginationUrl(
   params: ListingsSearchParams,
-  page: number
+  page: number,
 ): string {
   const searchParams = new URLSearchParams();
 
   // Add all current search parameters except page
   if (params.q) searchParams.set("q", params.q);
   if (params.category) searchParams.set("category", params.category);
+  if (Array.isArray(params.action) && params.action.length)
+    searchParams.set("action", params.action.join(","));
+  if (Array.isArray(params.manufacturer) && params.manufacturer.length)
+    searchParams.set("manufacturer", params.manufacturer.join(","));
   if (params.minPrice !== undefined)
     searchParams.set("minPrice", params.minPrice.toString());
   if (params.maxPrice !== undefined)
@@ -86,6 +92,8 @@ export default async function ListingsPage({
     perPage,
 
     category: typedSearchParams.category,
+    action: typedSearchParams.action,
+    manufacturer: typedSearchParams.manufacturer,
     minPrice: typedSearchParams.minPrice,
     maxPrice: typedSearchParams.maxPrice,
     sortBy: typedSearchParams.sortBy,
@@ -102,6 +110,25 @@ export default async function ListingsPage({
         : undefined,
   });
 
+  // Build category facet counts map from search result
+  type FacetCount = {
+    field_name: string;
+    counts: Array<{ value: string; count: number }>;
+  };
+  const facetCounts =
+    (listings.search as unknown as { facet_counts?: FacetCount[] })
+      ?.facet_counts ?? [];
+  const categoryCounts: Record<string, number> = Object.fromEntries(
+    (facetCounts.find((f) => f.field_name === "category")?.counts ?? []).map(
+      (c) => [c.value, c.count],
+    ),
+  );
+  const actionCounts: Record<string, number> = Object.fromEntries(
+    (facetCounts.find((f) => f.field_name === "action")?.counts ?? []).map(
+      (c) => [c.value, c.count],
+    ),
+  );
+
   return (
     <>
       <Navbar />
@@ -109,19 +136,24 @@ export default async function ListingsPage({
 
       <div className="mx-auto max-w-7xl space-y-14 px-4 py-10">
         <div className="flex gap-16">
-          <div className="w-[200px] flex-shrink-0 space-y-6">
+          <div className="w-[230px] flex-shrink-0 space-y-6">
             <div className="flex w-full items-center justify-between gap-2">
               <h2 className="font-semibold text-lg">Filters</h2>
               <ClearFiltersButton />
             </div>
-
             <Separator />
             <DistanceFilter />
             <Separator />
-            <CategoryFilter />
+            <div className="space-y-2">
+              <PriceFilter />
+              <ActionFilter counts={actionCounts} />
+              <ManufacturerFilter />
+            </div>
+            <Separator />
+            <CategoryFilter counts={categoryCounts} />
             <Separator />
 
-            <PriceFilter />
+            {/* <ManufacturerFilter counts={manufacturerCounts} /> */}
           </div>
 
           <div className="flex-grow space-y-4">
@@ -161,7 +193,7 @@ export default async function ListingsPage({
                         <PaginationPrevious
                           href={createPaginationUrl(
                             typedSearchParams,
-                            listings.pagination.currentPage - 1
+                            listings.pagination.currentPage - 1,
                           )}
                         />
                       </PaginationItem>
@@ -182,13 +214,13 @@ export default async function ListingsPage({
                             >
                               1
                             </PaginationLink>
-                          </PaginationItem>
+                          </PaginationItem>,
                         );
                         if (currentPage > 4) {
                           pages.push(
                             <PaginationItem key="ellipsis-start">
                               <PaginationEllipsis />
-                            </PaginationItem>
+                            </PaginationItem>,
                           );
                         }
                       }
@@ -206,7 +238,7 @@ export default async function ListingsPage({
                             >
                               {i}
                             </PaginationLink>
-                          </PaginationItem>
+                          </PaginationItem>,
                         );
                       }
 
@@ -216,7 +248,7 @@ export default async function ListingsPage({
                           pages.push(
                             <PaginationItem key="ellipsis-end">
                               <PaginationEllipsis />
-                            </PaginationItem>
+                            </PaginationItem>,
                           );
                         }
                         pages.push(
@@ -224,12 +256,12 @@ export default async function ListingsPage({
                             <PaginationLink
                               href={createPaginationUrl(
                                 typedSearchParams,
-                                totalPages
+                                totalPages,
                               )}
                             >
                               {totalPages}
                             </PaginationLink>
-                          </PaginationItem>
+                          </PaginationItem>,
                         );
                       }
 
@@ -242,7 +274,7 @@ export default async function ListingsPage({
                       <PaginationNext
                         href={createPaginationUrl(
                           typedSearchParams,
-                          listings.pagination.currentPage + 1
+                          listings.pagination.currentPage + 1,
                         )}
                       />
                     </PaginationItem>

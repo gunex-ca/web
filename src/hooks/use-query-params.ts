@@ -28,7 +28,7 @@ export function useSetQueryParams() {
   const setQueryParams = useCallback(
     (
       updates: Record<string, string | null | undefined>,
-      options?: { replace?: boolean }
+      options?: { replace?: boolean },
     ) => {
       const params = new URLSearchParams(searchParamsString);
       let changed = false;
@@ -51,7 +51,7 @@ export function useSetQueryParams() {
       if (options?.replace ?? true) router.replace(url, { scroll: false });
       else router.push(url, { scroll: false });
     },
-    [pathname, router, searchParamsString]
+    [pathname, router, searchParamsString],
   );
 
   return setQueryParams;
@@ -61,7 +61,7 @@ export function useSetQueryParams() {
 export function useDebouncedCallback<T extends (...args: unknown[]) => void>(
   callback: T,
   delayMs: number,
-  deps: ReadonlyArray<unknown> = []
+  deps: ReadonlyArray<unknown> = [],
 ) {
   const timeoutRef = useRef<number | null>(null);
   const latestCallbackRef = useRef<T>(callback);
@@ -88,26 +88,26 @@ export function useDebouncedCallback<T extends (...args: unknown[]) => void>(
         latestCallbackRef.current(...(args as unknown as Parameters<T>));
       }, delayMs);
     }) as T,
-    deps
+    deps,
   );
 }
 
 export function useQueryParam<T>(
   key: string,
   codec: QueryParamCodec<T>,
-  options?: { debounceMs?: number }
+  options?: { debounceMs?: number },
 ) {
   const searchParams = useSearchParams();
   const setQueryParams = useSetQueryParams();
   const debouncedSetQueryParams = useDebouncedCallback(
     setQueryParams,
     options?.debounceMs ?? 150,
-    [setQueryParams]
+    [setQueryParams],
   );
 
   const value = useMemo(
     () => codec.parse(searchParams.get(key)),
-    [codec, key, searchParams]
+    [codec, key, searchParams],
   );
 
   const setValue = useCallback(
@@ -119,7 +119,7 @@ export function useQueryParam<T>(
         debouncedSetQueryParams({ [key]: serialized }, options);
       }
     },
-    [codec, debouncedSetQueryParams, key, setQueryParams]
+    [codec, debouncedSetQueryParams, key, setQueryParams],
   );
 
   return [value, setValue] as const;
@@ -131,14 +131,14 @@ export function useToggleQueryParam(
     defaultValue?: boolean;
     serializeFalseAs?: "0" | "false" | null;
     debounceMs?: number;
-  }
+  },
 ) {
   const codec = useMemo(
     () =>
       booleanCodec(options?.defaultValue ?? false, {
         serializeFalseAs: options?.serializeFalseAs ?? null,
       }),
-    [options?.defaultValue, options?.serializeFalseAs]
+    [options?.defaultValue, options?.serializeFalseAs],
   );
   const [value, setValue] = useQueryParam<boolean>(key, codec, {
     debounceMs: options?.debounceMs,
@@ -156,7 +156,7 @@ export type SchemaValues<S extends Record<string, QueryParamCodec<unknown>>> = {
 };
 
 export function useQueryParamsSchema<
-  S extends Record<string, QueryParamCodec<unknown>>
+  S extends Record<string, QueryParamCodec<unknown>>,
 >(schema: S) {
   const searchParams = useSearchParams();
   const setQueryParams = useSetQueryParams();
@@ -182,7 +182,7 @@ export function useQueryParamsSchema<
         const codec = schema[key];
         if (!codec) continue;
         const result = (codec as QueryParamCodec<unknown>).serialize(
-          value as never
+          value as never,
         );
         serialized[key as string] = result;
       }
@@ -192,16 +192,16 @@ export function useQueryParamsSchema<
         debouncedSetQueryParams(serialized, options);
       }
     },
-    [debouncedSetQueryParams, schema, setQueryParams]
+    [debouncedSetQueryParams, schema, setQueryParams],
   );
 
   function useParam<K extends keyof S>(
     key: K,
-    options?: { debounceMs?: number }
+    options?: { debounceMs?: number },
   ) {
     const externalValue = values[key];
     const [localValue, setLocalValue] = useState<SchemaValues<S>[K]>(
-      externalValue as SchemaValues<S>[K]
+      externalValue as SchemaValues<S>[K],
     );
 
     useEffect(() => {
@@ -212,16 +212,16 @@ export function useQueryParamsSchema<
       (next: SchemaValues<S>[K], applyOptions?: { replace?: boolean }) => {
         setValues(
           { [key]: next } as unknown as Partial<SchemaValues<S>>,
-          applyOptions
+          applyOptions,
         );
       },
       options?.debounceMs ?? 150,
-      [key, setValues, options?.debounceMs]
+      [key, setValues, options?.debounceMs],
     );
 
     const setValue = (
       next: SchemaValues<S>[K],
-      applyOptions?: { replace?: boolean }
+      applyOptions?: { replace?: boolean },
     ) => {
       setLocalValue(next);
       debouncedApply(next, applyOptions);
@@ -234,21 +234,21 @@ export function useQueryParamsSchema<
     <K extends keyof S>(
       key: K,
       next: SchemaValues<S>[K],
-      options?: { replace?: boolean }
+      options?: { replace?: boolean },
     ) => {
       setValues(
         { [key]: next } as unknown as Partial<SchemaValues<S>>,
-        options
+        options,
       );
     },
-    [setValues]
+    [setValues],
   );
 
   return { values, setValues, useParam, setParam } as const;
 }
 
 export function createQueryParamsHook<
-  S extends Record<string, QueryParamCodec<unknown>>
+  S extends Record<string, QueryParamCodec<unknown>>,
 >(schema: S) {
   return function useTypedQueryParams() {
     return useQueryParamsSchema(schema);

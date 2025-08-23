@@ -15,6 +15,8 @@ export const searchRouter = createTRPCRouter({
         perPage: z.number().optional(),
         page: z.number().optional(),
         category: z.string().optional(),
+        action: z.array(z.string()).optional(),
+        manufacturer: z.array(z.string()).optional(),
 
         minPrice: z.number().optional(),
         maxPrice: z.number().optional(),
@@ -63,6 +65,16 @@ export const searchRouter = createTRPCRouter({
 
         ...(input.minPrice ? [`price:>=${input.minPrice}`] : []),
         ...(input.maxPrice ? [`price:<=${input.maxPrice}`] : []),
+        ...(input.action?.length
+          ? [`(${input.action.map((a) => `action:=${a}`).join(" || ")})`]
+          : []),
+        ...(input.manufacturer?.length
+          ? [
+              `(${input.manufacturer
+                .map((m) => `manufacturer:=${m}`)
+                .join(" || ")})`,
+            ]
+          : []),
       ]
         .filter(Boolean)
         .join(" && ");
@@ -92,7 +104,14 @@ export const searchRouter = createTRPCRouter({
 
           filter_by: filterBy,
 
-          facet_by: ["sub_category", "manufacturer", "model", "caliber"],
+          facet_by: [
+            "category",
+            "sub_category",
+            "manufacturer",
+            "model",
+            "caliber",
+            "action",
+          ],
 
           sort_by: sortBy,
 

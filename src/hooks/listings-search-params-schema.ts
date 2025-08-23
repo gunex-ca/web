@@ -4,6 +4,7 @@ import {
   booleanCodec,
   numberCodec,
   optional,
+  stringArrayCodec,
   stringCodec,
 } from "./query-param-codecs";
 
@@ -25,6 +26,12 @@ export const listingsSearchParamsSchema = {
   // Category filter
   category: optional(stringCodec("")),
 
+  // Firearm action filter (multi-select)
+  action: optional(stringArrayCodec()),
+
+  // Manufacturer filter (multi-select)
+  manufacturer: optional(stringArrayCodec()),
+
   // Sorting
   sortBy: optional(stringCodec("relevance")),
 
@@ -42,6 +49,8 @@ export type ListingsSearchParams = {
   minPrice?: number;
   maxPrice?: number;
   category?: string;
+  action?: string[];
+  manufacturer?: string[];
   sortBy?:
     | "relevance"
     | "price_asc"
