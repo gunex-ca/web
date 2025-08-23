@@ -27,7 +27,7 @@ const typesenseMigrations = async () => {
           "Error creating collection",
           error.name,
           schema.name,
-          error,
+          error
         );
       }
     }

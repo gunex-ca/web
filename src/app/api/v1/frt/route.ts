@@ -1,4 +1,4 @@
-import countryCodesList from "country-codes-list";
+import { findOne } from "country-codes-list";
 import { NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { typesense } from "~/server/typesense/client";
@@ -29,10 +29,7 @@ export const POST = request()
 
     const docs: FRTV1[] = [];
     for (const item of ctx.body) {
-      const country = countryCodesList.findOne(
-        "countryCode",
-        item.country_code,
-      );
+      const country = findOne("countryCode", item.country_code);
 
       if (country == null && item.country_code !== "Unknown") {
         console.error(`Country not found for ${item.country_code}`);
