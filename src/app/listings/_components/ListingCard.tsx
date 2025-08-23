@@ -2,6 +2,7 @@ import Link from "next/link";
 import { cn, formatCurrency } from "~/components/utils";
 import { buildImageUrl } from "~/server/s3";
 import { ListingImage } from "./ListingImage";
+import { formatDistanceToNowStrict } from "date-fns";
 
 type ListingImageData = {
   objectKey?: string | null;
@@ -16,6 +17,7 @@ export type ListingCardProps = {
     images: ListingImageData[];
     price: string | null;
     location: string | null;
+    createdAt: Date;
   };
   className?: string;
 };
@@ -50,7 +52,9 @@ export const ListingCard: React.FC<ListingCardProps> = ({
           {formatCurrency(listing.price)}
         </div>
         <div className="text-muted-foreground text-xs">
-          {listing.location ?? "Location not available"}
+          <span>{listing.location ?? "Location not available"}</span>
+          <span className="px-1">•</span>
+          <span>{formatDistanceToNowStrict(listing.createdAt)}</span>
         </div>
       </div>
     </Link>

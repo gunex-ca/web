@@ -2,18 +2,33 @@ import { z } from "zod/v4";
 import { typesense } from "~/server/typesense/client";
 import type { FRTV1, ListingV1 } from "~/server/typesense/schemas";
 import { createTRPCRouter, publicProcedure } from "../trpc";
+import { inArray } from "drizzle-orm";
+import * as schema from "~/server/db/schema";
+import { db } from "~/server/db";
+import { isPresent } from "ts-is-present";
 
 export const searchRouter = createTRPCRouter({
   listings: publicProcedure
     .input(
       z.object({
-        q: z.string(),
+        q: z.string().optional(),
         limit: z.number().optional(),
         page: z.number().optional(),
         category: z.string().optional(),
 
         minPrice: z.number().optional(),
         maxPrice: z.number().optional(),
+
+        sortBy: z
+          .enum([
+            "relevance",
+            "price_asc",
+            "price_desc",
+            "newest",
+            "oldest",
+            "closest",
+          ])
+          .optional(),
 
         location: z
           .object({
@@ -36,6 +51,7 @@ export const searchRouter = createTRPCRouter({
       ] as const;
 
       const filterBy = [
+        "status:=active",
         ...(input.category
           ? [`(category:=${input.category} || sub_category:=${input.category})`]
           : []),
@@ -51,6 +67,20 @@ export const searchRouter = createTRPCRouter({
         .filter(Boolean)
         .join(" && ");
 
+      const sortBy = {
+        relevance: "_text_match:desc,created_at:desc",
+
+        price_asc: "price:asc,_text_match:desc",
+        price_desc: "price:desc,_text_match:desc",
+
+        newest: "created_at:desc,_text_match:desc",
+        oldest: "created_at:asc,_text_match:desc",
+
+        closest: input.location
+          ? `location:(${input.location.latitude}, ${input.location.longitude}, ${input.location.radius} km),_text_match:desc`
+          : "_text_match:desc,created_at:desc",
+      }[input.sortBy ?? "relevance"];
+
       const result = await typesense
         .collections<ListingV1>("listing_v1")
         .documents()
@@ -64,11 +94,55 @@ export const searchRouter = createTRPCRouter({
 
           facet_by: ["sub_category", "manufacturer", "model", "caliber"],
 
+          sort_by: sortBy,
+
           limit: input.limit ?? 50,
           page: input.page ?? 1,
         });
 
-      return result;
+      if (result.hits == null) return { search: result, listings: [] };
+
+      const orderedIds = result.hits.map((listing) => listing.document.id);
+
+      const listings = await db.query.listing.findMany({
+        where: inArray(schema.listing.id, orderedIds),
+        with: {
+          seller: true,
+          images: true,
+          external: true,
+        },
+      });
+
+      console.log(orderedIds.length, orderedIds);
+      console.log(listings.length);
+      console.log(result.hits.length);
+
+      // Sort listings to match the order from Typesense search results
+      const listingMap = new Map(
+        listings.map((listing) => [listing.id, listing])
+      );
+      const sortedListings = orderedIds
+        .map((id) => listingMap.get(id))
+        .filter(isPresent);
+
+      // Extract pagination metadata from Typesense result
+      const totalResults = result.found ?? 0;
+      const currentPage = result.page ?? 1;
+      const perPage = result.request_params?.per_page ?? input.limit ?? 50;
+      const totalPages = Math.ceil(totalResults / perPage);
+
+      return {
+        search: result,
+        listings: sortedListings,
+        pagination: {
+          currentPage,
+          totalPages,
+          totalResults,
+          perPage,
+          hasNextPage: currentPage < totalPages,
+          hasPreviousPage: currentPage > 1,
+        },
+      };
     }),
 
   manufacturers: publicProcedure.input(z.string()).query(async ({ input }) => {

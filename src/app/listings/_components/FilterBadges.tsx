@@ -50,7 +50,7 @@ export const FilterBadges: React.FC = () => {
               )}`
             : values.minPrice != null
             ? `Min ${formatCurrency(values.minPrice)}`
-            : `Max ${formatCurrency(values.maxPrice)}`}
+            : `Under ${formatCurrency(values.maxPrice)}`}
           <X />
         </Button>
       )}

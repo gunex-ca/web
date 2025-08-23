@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import type { Metadata } from "next";
 import Navbar from "~/app/_components/Navbar";
+import { formatCurrency } from "~/components/utils";
 import { CATEGORY } from "~/lib/categories";
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { db } from "~/server/db";
@@ -18,20 +19,6 @@ export default function ListingsLayout({
       {children}
     </>
   );
-}
-
-function formatCurrency(amount: unknown) {
-  const num = typeof amount === "number" ? amount : Number(amount ?? 0);
-  try {
-    return new Intl.NumberFormat("en-CA", {
-      style: "currency",
-      currency: "CAD",
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(num);
-  } catch {
-    return `$${num.toFixed(0)}`;
-  }
 }
 
 export async function generateMetadata({
@@ -57,9 +44,7 @@ export async function generateMetadata({
     };
   }
 
-  const price = listing.price
-    ? formatCurrency(listing.price)
-    : "Contact for price";
+  const price = formatCurrency(listing.price);
 
   const pc = listing.seller?.postalCode ?? listing.external?.postalCode;
   const postalCode = findPostalCode(pc ?? "");

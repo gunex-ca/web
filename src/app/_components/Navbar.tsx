@@ -32,6 +32,9 @@ export default async function Navbar({
         </Link>
 
         <nav className="hidden items-center gap-8 text-muted-foreground text-sm md:flex">
+          <Link href="/listings" className="hover:text-foreground">
+            Listings
+          </Link>
           <Link href="/" className="hover:text-foreground">
             Categories
           </Link>

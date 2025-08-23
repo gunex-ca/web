@@ -20,6 +20,11 @@ export const s3 = new S3Client({
  * @returns Complete URL to the S3 object
  */
 export function buildImageUrl(objectKey: string): string {
+  if (env.S3_PUBLIC_URL_BASE) {
+    return `${env.S3_PUBLIC_URL_BASE}/${objectKey}`;
+  }
+
+  // Fallback to S3-style URL construction
   const baseUrl = env.S3_ENDPOINT;
   const bucket = env.LISTING_IMAGES_BUCKET;
   return `${baseUrl}/${bucket}/${objectKey}`;

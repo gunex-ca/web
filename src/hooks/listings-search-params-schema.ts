@@ -25,6 +25,9 @@ export const listingsSearchParamsSchema = {
   // Category filter
   category: optional(stringCodec("")),
 
+  // Sorting
+  sortBy: optional(stringCodec("relevance")),
+
   // Pagination
   page: numberCodec(1, { min: 1 }),
 } as const;
@@ -39,12 +42,19 @@ export type ListingsSearchParams = {
   minPrice?: number;
   maxPrice?: number;
   category?: string;
+  sortBy?:
+    | "relevance"
+    | "price_asc"
+    | "price_desc"
+    | "newest"
+    | "oldest"
+    | "closest";
   page: number;
 };
 
 // Helper to parse search params (works on both server and client)
 export function parseListingsSearchParams(
-  searchParams: URLSearchParams,
+  searchParams: URLSearchParams
 ): ListingsSearchParams {
   const result: Record<string, unknown> = {};
 

@@ -23,7 +23,12 @@ const typesenseMigrations = async () => {
       console.log("Created collection", schema.name);
     } catch (error) {
       if (error.name !== "ObjectAlreadyExists") {
-        console.error("Error creating collection", schema.name, error);
+        console.error(
+          "Error creating collection",
+          error.name,
+          schema.name,
+          error
+        );
       }
     }
   }
@@ -40,7 +45,7 @@ const typesenseMigrations = async () => {
 
 export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    await dbMigrations();
+    if (env.NODE_ENV === "production") await dbMigrations();
     await typesenseMigrations();
   }
 }
