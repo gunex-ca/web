@@ -32,6 +32,9 @@ export const listingsSearchParamsSchema = {
   // Manufacturer filter (multi-select)
   manufacturer: optional(stringArrayCodec()),
 
+  // Condition filter (multi-select)
+  condition: optional(stringArrayCodec()),
+
   // Sorting
   sortBy: optional(stringCodec("relevance")),
 
@@ -51,6 +54,7 @@ export type ListingsSearchParams = {
   category?: string;
   action?: string[];
   manufacturer?: string[];
+  condition?: string[];
   sortBy?:
     | "relevance"
     | "price_asc"
@@ -63,7 +67,7 @@ export type ListingsSearchParams = {
 
 // Helper to parse search params (works on both server and client)
 export function parseListingsSearchParams(
-  searchParams: URLSearchParams,
+  searchParams: URLSearchParams
 ): ListingsSearchParams {
   const result: Record<string, unknown> = {};
 

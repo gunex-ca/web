@@ -17,6 +17,7 @@ export const searchRouter = createTRPCRouter({
         category: z.string().optional(),
         action: z.array(z.string()).optional(),
         manufacturer: z.array(z.string()).optional(),
+        condition: z.array(z.string()).optional(),
 
         minPrice: z.number().optional(),
         maxPrice: z.number().optional(),
@@ -39,7 +40,7 @@ export const searchRouter = createTRPCRouter({
             radius: z.number(),
           })
           .optional(),
-      }),
+      })
     )
     .query(async ({ input }) => {
       const queryBy = [
@@ -74,6 +75,9 @@ export const searchRouter = createTRPCRouter({
                 .map((m) => `manufacturer:=${m}`)
                 .join(" || ")})`,
             ]
+          : []),
+        ...(input.condition?.length
+          ? [`(${input.condition.map((c) => `condition:=${c}`).join(" || ")})`]
           : []),
       ]
         .filter(Boolean)
@@ -111,6 +115,7 @@ export const searchRouter = createTRPCRouter({
             "model",
             "caliber",
             "action",
+            "condition",
           ],
 
           sort_by: sortBy,
@@ -133,7 +138,7 @@ export const searchRouter = createTRPCRouter({
       });
 
       const listingMap = new Map(
-        listings.map((listing) => [listing.id, listing]),
+        listings.map((listing) => [listing.id, listing])
       );
       const sortedListings = orderedIds
         .map((id) => listingMap.get(id))
@@ -185,7 +190,7 @@ export const searchRouter = createTRPCRouter({
       z.object({
         manufacturer: z.string(),
         q: z.string(),
-      }),
+      })
     )
     .query(async ({ input: { manufacturer, q } }) => {
       const result = await typesense

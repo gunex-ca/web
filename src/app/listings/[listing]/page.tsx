@@ -53,7 +53,7 @@ export default async function ListingPage({ params }: PageProps) {
   const price = formatCurrency(listing.price);
 
   const postalCode = findPostalCode(
-    listing.seller?.postalCode ?? listing?.external?.postalCode ?? "",
+    listing.seller?.postalCode ?? listing?.external?.postalCode ?? ""
   );
   const location =
     postalCode != null
@@ -84,7 +84,7 @@ export default async function ListingPage({ params }: PageProps) {
   const relatedionCategory = await db.query.listing.findMany({
     where: and(
       eq(schema.listing.subCategoryId, listing.subCategoryId),
-      ne(schema.listing.id, listing.id),
+      ne(schema.listing.id, listing.id)
     ),
     with: {
       images: { limit: 1, orderBy: (image, { asc }) => [asc(image.sortOrder)] },
@@ -106,7 +106,7 @@ export default async function ListingPage({ params }: PageProps) {
       ? await db.query.listing.findMany({
           where: and(
             sql`${schema.listing.properties} ->> 'caliber' = ${caliber}`,
-            ne(schema.listing.id, listing.id),
+            ne(schema.listing.id, listing.id)
           ),
           with: {
             images: {
@@ -142,7 +142,9 @@ export default async function ListingPage({ params }: PageProps) {
 
               <TitleSection title={listing.title} />
 
-              <ActionsSection />
+              {session != null && session.user.id !== listing.sellerId && (
+                <ActionsSection externalUrl={listing.external?.url} />
+              )}
               <PriceSection price={price} />
 
               <MetaRow createdAt={listing.createdAt} location={location} />

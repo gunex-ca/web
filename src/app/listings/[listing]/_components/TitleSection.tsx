@@ -1,7 +1,8 @@
+import type { Session, User } from "better-auth";
 import { Bookmark, Flag, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import type { FC } from "react";
-import { Button } from "~/components/ui/button";
+import { Button, buttonVariants } from "~/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,9 +16,21 @@ export const TitleSection: FC<{ title: string }> = ({ title }) => (
   </div>
 );
 
-export const ActionsSection: FC = () => (
+export const ActionsSection: FC<{ externalUrl?: string | null }> = ({
+  externalUrl,
+}) => (
   <div className="flex items-center gap-2">
-    <Button variant="secondary">Message Seller</Button>
+    {externalUrl != null ? (
+      <Link
+        href={externalUrl}
+        rel="nofollow"
+        className={buttonVariants({ variant: "secondary" })}
+      >
+        Message Seller
+      </Link>
+    ) : (
+      <Button variant="secondary">Message Seller</Button>
+    )}
     <Button variant="secondary" size="icon">
       <Bookmark />
     </Button>

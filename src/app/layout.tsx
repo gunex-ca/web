@@ -30,7 +30,13 @@ export default function RootLayout({
       className={`${geist.variable}`}
       suppressHydrationWarning={true}
     >
-      <head />
+      <head>
+        <script
+          defer
+          src="https://cloud.umami.is/script.js"
+          data-website-id="a863a8ae-ae21-425b-be3d-48dee015c22f"
+        />
+      </head>
       <body suppressHydrationWarning className="flex min-h-screen flex-col">
         <ThemeProvider
           attribute="class"

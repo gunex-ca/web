@@ -56,6 +56,17 @@ export const FilterBadges: React.FC = () => {
         </Button>
       )}
 
+      {Array.isArray(values.condition) && values.condition.length > 0 && (
+        <Button
+          variant="secondary"
+          size="sm"
+          className="rounded-full"
+          onClick={() => setParam("condition", undefined)}
+        >
+          {values.condition.join(", ")} <X />
+        </Button>
+      )}
+
       {(values.maxPrice != null || values.minPrice != null) && (
         <Button
           variant="secondary"
@@ -68,11 +79,11 @@ export const FilterBadges: React.FC = () => {
         >
           {values.minPrice != null && values.maxPrice != null
             ? `${formatCurrency(values.minPrice)} - ${formatCurrency(
-                values.maxPrice,
+                values.maxPrice
               )}`
             : values.minPrice != null
-              ? `Min ${formatCurrency(values.minPrice)}`
-              : `Under ${formatCurrency(values.maxPrice)}`}
+            ? `Min ${formatCurrency(values.minPrice)}`
+            : `Under ${formatCurrency(values.maxPrice)}`}
           <X />
         </Button>
       )}

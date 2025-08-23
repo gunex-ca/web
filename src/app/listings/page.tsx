@@ -14,6 +14,7 @@ import { PriceFilter } from "./_components/PriceFilter";
 import { findPostalCode } from "~/lib/location/postal-codes";
 import { api } from "~/trpc/server";
 import ActionFilter from "./_components/ActionFilter";
+import ConditionFilter from "./_components/ConditionFilter";
 import CategoryFilter from "./_components/CategoryFilter";
 import { FilterBadges } from "./_components/FilterBadges";
 import ManufacturerFilter from "./_components/ManufacturerFilter";
@@ -32,7 +33,7 @@ import {
 // Helper function to generate pagination URLs with search parameters
 function createPaginationUrl(
   params: ListingsSearchParams,
-  page: number,
+  page: number
 ): string {
   const searchParams = new URLSearchParams();
 
@@ -43,6 +44,8 @@ function createPaginationUrl(
     searchParams.set("action", params.action.join(","));
   if (Array.isArray(params.manufacturer) && params.manufacturer.length)
     searchParams.set("manufacturer", params.manufacturer.join(","));
+  if (Array.isArray(params.condition) && params.condition.length)
+    searchParams.set("condition", params.condition.join(","));
   if (params.minPrice !== undefined)
     searchParams.set("minPrice", params.minPrice.toString());
   if (params.maxPrice !== undefined)
@@ -94,6 +97,7 @@ export default async function ListingsPage({
     category: typedSearchParams.category,
     action: typedSearchParams.action,
     manufacturer: typedSearchParams.manufacturer,
+    condition: typedSearchParams.condition,
     minPrice: typedSearchParams.minPrice,
     maxPrice: typedSearchParams.maxPrice,
     sortBy: typedSearchParams.sortBy,
@@ -120,13 +124,18 @@ export default async function ListingsPage({
       ?.facet_counts ?? [];
   const categoryCounts: Record<string, number> = Object.fromEntries(
     (facetCounts.find((f) => f.field_name === "category")?.counts ?? []).map(
-      (c) => [c.value, c.count],
-    ),
+      (c) => [c.value, c.count]
+    )
   );
   const actionCounts: Record<string, number> = Object.fromEntries(
     (facetCounts.find((f) => f.field_name === "action")?.counts ?? []).map(
-      (c) => [c.value, c.count],
-    ),
+      (c) => [c.value, c.count]
+    )
+  );
+  const conditionCounts: Record<string, number> = Object.fromEntries(
+    (facetCounts.find((f) => f.field_name === "condition")?.counts ?? []).map(
+      (c) => [c.value, c.count]
+    )
   );
 
   return (
@@ -148,6 +157,7 @@ export default async function ListingsPage({
               <PriceFilter />
               <ActionFilter counts={actionCounts} />
               <ManufacturerFilter />
+              <ConditionFilter counts={conditionCounts} />
             </div>
             <Separator />
             <CategoryFilter counts={categoryCounts} />
@@ -193,7 +203,7 @@ export default async function ListingsPage({
                         <PaginationPrevious
                           href={createPaginationUrl(
                             typedSearchParams,
-                            listings.pagination.currentPage - 1,
+                            listings.pagination.currentPage - 1
                           )}
                         />
                       </PaginationItem>
@@ -214,13 +224,13 @@ export default async function ListingsPage({
                             >
                               1
                             </PaginationLink>
-                          </PaginationItem>,
+                          </PaginationItem>
                         );
                         if (currentPage > 4) {
                           pages.push(
                             <PaginationItem key="ellipsis-start">
                               <PaginationEllipsis />
-                            </PaginationItem>,
+                            </PaginationItem>
                           );
                         }
                       }
@@ -238,7 +248,7 @@ export default async function ListingsPage({
                             >
                               {i}
                             </PaginationLink>
-                          </PaginationItem>,
+                          </PaginationItem>
                         );
                       }
 
@@ -248,7 +258,7 @@ export default async function ListingsPage({
                           pages.push(
                             <PaginationItem key="ellipsis-end">
                               <PaginationEllipsis />
-                            </PaginationItem>,
+                            </PaginationItem>
                           );
                         }
                         pages.push(
@@ -256,12 +266,12 @@ export default async function ListingsPage({
                             <PaginationLink
                               href={createPaginationUrl(
                                 typedSearchParams,
-                                totalPages,
+                                totalPages
                               )}
                             >
                               {totalPages}
                             </PaginationLink>
-                          </PaginationItem>,
+                          </PaginationItem>
                         );
                       }
 
@@ -274,7 +284,7 @@ export default async function ListingsPage({
                       <PaginationNext
                         href={createPaginationUrl(
                           typedSearchParams,
-                          listings.pagination.currentPage + 1,
+                          listings.pagination.currentPage + 1
                         )}
                       />
                     </PaginationItem>
