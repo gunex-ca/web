@@ -2,11 +2,9 @@
 import { X } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { cn } from "~/components/utils";
-import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 export const ExitButton = ({ className }: { className?: string }) => {
-  const router = useRouter();
   const [canGoBack, setCanGoBack] = useState(false);
 
   useEffect(() => {
@@ -42,7 +40,7 @@ export const ExitButton = ({ className }: { className?: string }) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && canGoBack) {
-        router.back();
+        window.history.back();
       }
     };
 
@@ -51,7 +49,7 @@ export const ExitButton = ({ className }: { className?: string }) => {
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [canGoBack, router]);
+  }, [canGoBack]);
 
   if (!canGoBack) return null;
 
@@ -60,7 +58,7 @@ export const ExitButton = ({ className }: { className?: string }) => {
       variant="secondary"
       size="icon"
       className={cn("z-20 rounded-full", className)}
-      onClick={() => router.back()}
+      onClick={() => window.history.back()}
     >
       <X />
     </Button>
